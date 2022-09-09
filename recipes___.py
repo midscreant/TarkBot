@@ -33,7 +33,7 @@ workbench_1_recipes = {"Broken LCD":{"Screwdriver":1, "Working LCD":4},
                      "VOG-25 Khattabka improvised hand grenade":{"Leatherman Multitool":1, "UZRGM Grenade Fuze":5, "40mm VOG-25":5},
                      "9x18mm PM RG028 gzh":{"Gunpowder \"Kite\"":1},
                      "Bundle of wires":{"Power Cord":2},
-                     "Capacitors":{"Screwdriver":1, "Power Supply Unit":1},
+                     "Capacitors":{"Screwdriver":1, "Power Supply Unit":1}, 
                      "PP-9 \"Klin\" 9x18PMM submachine gun":{"Set of files \"Master\"":1, "PP-91 \"Kedr\" 9x18PM submachine gun":1},
                      "Round Pliers":{"Set of Files \"Master\"":1, "Pliers":1} }
 
@@ -140,17 +140,87 @@ medstation_3_recipes = {"Vaseline balm":{"Soap":3, "Schaman Shampoo":2, "Pile of
                         "Surv12 field surgical kit":{"Pile of Meds":6, "Medical Tools":2, "Esmarch Tourniquet":1},
                         "SJ6 TGLabs combat stimulant injector":{"SJ1 TGLabs combat stimulant injector":1, "Pile of Meds":2, "Bottle of Saline Solution":1, "Bottle of OLOLO Multivitamins":1},
                         "Propital regenerative stimulant injector":{"Ibuprofen Painkillers":1, "Golden Star Balm":1, "Pile of Meds":2},
-                        "LEDX Skin Transilluminator":{"Toolset":1, "Ophthalmoscope":2, "Magnet":3, "UHF RFID Reader":3, "Portable Powerbank":3, "Portable Defibrillator":2} }
+                        "LEDX Skin Transilluminator":{"Toolset":1, "Ophthalmoscope":2, "Magnet":3, "UHF RFID Reader":3, "Portable Powerbank":3, "Portable Defibrillator":2} } 
  
+#<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+#other
+#things like sugar, water bottles etc. also would fall under this, but for construction purposes, charge doesn't matter
+partial_items = ["Water Filter", "FP-100 Filter Absorber", "Metal Fuel Tank", "Expeditionary fuel tank"]
+scav_items = ["Intelligence folder", "\"Fierce Hatchling\" Moonshine"] 
+
+
+new_names = {"7.62x39mm BP gzh":"762BP", 
+            "9x18mm PM RG028 gzh":"918RG028",
+            "5.45x39mm PP gs":"545PP",
+            "5.56x45mm Warmageddon":"556WAR",
+            "7.62x54mm R SNB gzh":"762SNB",
+            "Kalashnikov AK-74M 5.45x39 assault rifle":"AK74M",
+            "RGD-5 hand grenade":"RGD5",
+            "9x39mm SP-6 gs":"939SP6",
+            "9x19mm RIP":"919RIP",
+            "12/70 8.5mm Magnum buckshot":"12MAG",
+            "5.45x39mm PPBS gs \"Igolnik\"":"545IGL",
+            "7.62x51mm M61":"762M61",
+            "Bundle of wires":"WIRES",
+            "Capacitors":"CAPS",
+            "Gunpowder \"Kite\"":"KITE",
+            "Gunpowder \"Hawk\"":"HAWK", #(OFZ)
+            "12/70 AP-20 armor-piercing slug":"12AP20",
+            "Gunpowder \"Hawk\"-_-":"HAWK2", #(MATCHES)
+            "5.56x45mm M995":"556995",
+            "Weapon Parts":"PARTS", 
+            "Gunpowder \"Eagle\"":"EAGLE",
+            "Power Cord":"POWER", #(CABLE)
+            "Printed Circuit Board":"PCB",
+            "Electric Motor":"MOTOR",
+            "Rechargeable battery":"RECBAT",
+            "Car Battery":"CARBAT",
+            "Broken LCD":"BROLCD",
+            "\"Zarya\" stun grenade":"ZARYA",
+            "VOG-25 Khattabka improvised hand grenade":"VOG25",
+            "5.56x45mm M856A1":"55656A1",
+            "9x18mm PM PBM gzh":"918PBM",
+            "9x19mm AP 6.3":"919AP",
+            ".366 TKM AP-M":"366AP",
+            "9x19mm PBP gzh":"919PBP",
+            "Printed Circuit Board-_-":"PCB2", #(GAS AN)
+            "Geiger-Muller counter":"GMC",
+            "12/70 Flechette":"12FLE",
+            "12/70 SuperFormance HP slug":"12SUP",
+            "Magnet":"MAGNET",
+            "Military Circuit Board":"MCB",
+            "FLIR RS-32 2.25-9x 35mm 60Hz thermal riflescope":"FLIR",
+            "Kalashnikov AK-74N 5.45x39 assault rifle":"AK74N",
+            "Kalashnikov AKM 7.62x39 assault rifle":"AKM", #(762)
+            "NIXXOR Lens":"NIX",
+            "T-Shaped Plug":"TPLUG",
+            "23x75mm \"Zvezda\" flashbang round":"ZVEZ",
+            "OFZ 30x160mm shell":"OFZ",
+            "9x39mm SPP gs":"939SPP",
+            "Spark Plug":"SPARK",
+            "Broken GPhone smartphone":"GPHONE",
+            "Weapon Parts-_-":"PARTS2", 
+            "Bulbex Cable Cutter":"BULB",
+            "Gas Analyzer":"GASAN",
+            ".45 ACP AP":"45AP",
+            "GreenBat lithium battery":"GREENBAT",
+            "Weapon Repair Kit":"WRK",
+            "PP-9 \"Klin\" 9x18PMM submachine gun":"KLIN",
+            "Can of Thermite":"THERM",
+            "12.7x55mm PS12B":"PS12B",
+            "Round Pliers":"PLIERS",
+            "9x39mm BP gs":"939BP" }
+ 
+
 #<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 #all
 
 all_recipes = {"Workbench":[workbench_1_recipes, workbench_2_recipes, workbench_3_recipes],
                "Nutrition":[nutrition_1_recipes, nutrition_2_recipes, nutrition_3_recipes],
                "Intel":[intel_2_recipes, intel_3_recipes],
-               "Medstation":[medstation_1_recipes, medstation_2_recipes, medstation_3_recipes]} 
+               "Medstation":[medstation_1_recipes, medstation_2_recipes, medstation_3_recipes],
+               "Workbench - Names":new_names} 
 
-keys = all_recipes.keys()
-values = list(all_recipes.values())
-keys, values = all_recipes.items()
- 
+
+
+

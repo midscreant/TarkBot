@@ -3,11 +3,7 @@
 Created on Fri Aug 26 13:22:17 2022
 
 @author: vinch
-"""
-
-#Hideout v2
- 
-
+""" 
 #Hideout v2
 
 #<><><><><><><><>
@@ -15,19 +11,14 @@ Created on Fri Aug 26 13:22:17 2022
 #TarkovBotV2
 #---------------
 #<><><><><><><><>
-
-#Use sentiment to define photo groups (Ready to go, Unable to go etc.)
-#THIS IS ARROW STRAT
  
 import pyautogui as pygui
 from time import sleep
 import random
 import cv2
 import os 
-#_icon = status
-#_stamp = buttons
-#_node = node
- 
+from recipes___ import all_recipes
+  
 #NODE STATUSES 
     #Under Construction (construction_icon) (grab time left)
     #Producing (production_icon) (grab time left)
@@ -51,7 +42,7 @@ class Hideout:
         #goes to "Nodes" Folder within "Icons"
         self.icons_path = os.path.join(self.stamp_path, 'Nodes')
         #goes to "Blocks" Folder
-        self.blocks_path = os.path.join(self.base_path, 'Blocks')
+        self.blocks_path = os.path.join(self.stamp_path, 'Blocks')
         #goes to "Node_Descriptions" within "Icons"
         self.descriptions_path = os.path.join(self.stamp_path, 'Node_Descriptions')
         #item icons path
@@ -59,11 +50,33 @@ class Hideout:
         #submenu options path
         self.submenu_path = os.path.join(self.stamp_path, "Submenu_Options")
         #recipes path
-        self.recipes_path = os.path.join(self.stamp_path, "Recipes") 
+        self.recipes_path = os.path.join(self.stamp_path, "Recipes")
+        #specific recipe paths
+        self.workbench_recipes_path = os.path.join(self.recipes_path, "Workbench")
         
         # self.statuses = ["working_full_node", "working_empty_node", "working_half_node", "incomplete_node", "na_node", "locked_node", "complete_node", "unpowered_node"] 
         self.node_names = ["air", "booze", "btc", "generator", "heating", "illumination", "intel", "lav", "library", "med", "nutrition", "rest", "scav", "vents", "water", "workbench"] 
         self.current_statuses = []
+   
+        #initial hideout press
+        self.initial = False
+        
+        #lists of dicts
+            #dicts are recipe books
+        
+        self.workbench_recipes = all_recipes["Workbench"]
+        self.nutrition_recipes = all_recipes["Nutrition"]
+        self.intel_recipes = all_recipes["Intel"]
+        self.medstation_recipes = all_recipes["Medstation"]
+        
+        #complete dicts
+        self.full_workbench_recipes = self.workbench_recipes[0] | self.workbench_recipes[1] | self.workbench_recipes[2] 
+        self.full_nutrition_recipes = self.nutrition_recipes[0] | self.nutrition_recipes[1] | self.nutrition_recipes[2]
+        self.full_intel_recipes = self.intel_recipes[0] | self.intel_recipes[1] 
+        self.full_medstation_recipes = self.medstation_recipes[0] | self.medstation_recipes[1] | self.medstation_recipes[2]
+        
+        #dict
+        self.workbench_names = all_recipes["Workbench - Names"]
         
     #<><><><><><><><><><><><><>
     #Simple Hideout Functions 
@@ -72,10 +85,12 @@ class Hideout:
     def goToHideout(self):
         #Click "Hideout" (Bottom)
         pygui.click(x=201, y=1057)
-        #Sleeps 10 so hideout has enough time to load 
-        #sleep(10)
-        #ADD  SELF VAR THAT HOLDS HIDOUT LOAD STATUS
-        
+        if self.initial == False:
+            self.initial = True
+            #sleep(10)
+        sleep(1)    
+ 
+    
     def hideoutReset(self): 
         #reset to middle
         pygui.press('enter')
@@ -83,6 +98,7 @@ class Hideout:
         pygui.press('esc')
         sleep(0.25)
          
+        
     def hideoutMoveLeft(self):
         self.hideoutReset()
         #Move left 
@@ -90,6 +106,7 @@ class Hideout:
         sleep(0.3)
         pygui.moveTo(x=960,y=540)
         sleep(0.3)
+        
         
     def hideoutMoveRight(self):
         self.hideoutReset()
@@ -120,6 +137,7 @@ class Hideout:
                 return icon_split[0]
         return "Inactive"    
             
+    
     def findNodeName(self, description_list):
         #Assumes you are already in a node
         #returns node name, None if not found
@@ -130,8 +148,9 @@ class Hideout:
                 #return the nodes name, splits it at _ 
                 return node_split[0]       
  
+    
     def findAllStatuses(self):
-        #WORKING
+        #WORKING. Scrolls on bottom. Slow
         self.goToHideout()
         sleep(10)
         #goes to icons path, says there after funct complete
@@ -164,35 +183,39 @@ class Hideout:
     #<><><><><><><><><><><><><>
     #Active Hideout Functions
     #<><><><><><><><><><><><><>
-    
-    #currently, all functions here made to support makeBP() 
-    # def clickToFilter(self, file_dir, file_name):
-    #     os.chdir(file_dir)
-    #     #Assumes you can see item  
-    #     item_location = pygui.locateOnScreen(file_name, confidence=0.9)
-    #     if item_location != None: 
-    #         itemx, itemy = pygui.center(item_location) 
-    #         pygui.rightClick(x=itemx, y=itemy)
-    #         sleep(0.25)
-    #         os.chdir(self.submenu)
-    #         filter_location = pygui.locateOnScreen("FilterByItem_Option.png", confidence=0.9)
-    #         if filter_location != None:
-    #             filterx, filtery = pygui.center(filter_location)
-    #             pygui.click(filterx, filtery)
-    #             sleep(0.5)
-    #         else:
-    #             print("ERROR: Somehow the filter isnt there")
-    #             return "fail"
-    
+ 
     def bottomFlea(self):
         pygui.click(x=1228, y=1066)
         sleep(1)
     
-    def buyAid(self, offset=None):
-        #assumes you are on flea  
+    
+    def buyAid(self, count=None, offset=None):
+        #assumes you are on flea and at correct item, as does parent  
         #FIRST PURCHASE POINT (x=1761, y=179)
-        #offset is an int for jumping down a certain count 
-        if offset == None or offset == 0:
+        #offset is an int for jumping down a certain count
+        if count != None:
+            #BUY STACK LOGIC
+            #NO ERROR CHECKING CURRENTLY
+            if offset == None or offset == 0:
+                pygui.click(x=1761, y=179)
+                sleep(0.15)
+                pygui.click(x=1045, y=482)
+                sleep(0.15)
+                pygui.write(str(count), interval=0.125)
+                sleep(0.15)
+                pygui.press("y")
+                sleep(0.5)
+            else:    
+                pixel_offset = 72 * offset
+                pygui.click(x=1762, y=179+pixel_offset)
+                sleep(0.15)
+                pygui.click(x=1045, y=482)
+                sleep(0.15)
+                pygui.write(str(count), interval=0.125)
+                sleep(0.15)
+                pygui.press("y")
+                sleep(0.5) 
+        elif offset == None or offset == 0:
             pygui.click(x=1761, y=179)
             sleep(0.15)
             pygui.press("y")
@@ -204,19 +227,33 @@ class Hideout:
             pygui.press("y")
             sleep(0.5)
        
+        
     def buyOnFlea(self, count, item_name, offset=None):  
         _index = 0
-        _z = 0
+        _z = 0 
+        _exit = 0 
+        if count > 5 and count <= 10:
+            #does extra attempts for more items
+            _exit = 12
+        else:
+            _exit = 8 
         os.chdir(self.submenu_path)
-        while _index < count and _z < 6:
-            self.buyAid(offset)
+        while _index < count and _z < _exit: 
+            if count > 10:
+                #moves to stack purchase
+                self.buyAid(count, offset)
+            else:
+                self.buyAid(offset) 
             if pygui.locateOnScreen("PurchaseComplete_option.png", confidence=0.7) != None:
                 _index += 1
+                if count > 10:
+                    print("Stack of "+str(count)+" "+item_name+"s successfully purchased...")
+                    return
                 sleep(2.25)
             else:
                 print("Purchase failed, retrying")
                 _z += 1
-        if _z == 6:
+        if _z == _exit:
             if _index == 0: 
                 print("All purchases failed")
             else:
@@ -226,8 +263,9 @@ class Hideout:
             return "fail"
         else:
             sleep(0.25)
-            print("All "  + str(count) + " " + item_name + "s bought") 
+            print("All "  + str(count) + " " + item_name + "s bought")       
  
+    
     def fleaMarketSearch(self, item_name):
         #assumes you are already on the flea
         #assumes you already have a specific item selected 
@@ -248,78 +286,60 @@ class Hideout:
             point_2x, point_2y = pygui.center(refreshed_points[1]) 
             pygui.click(x=point_2x, y=point_2y)
             sleep(1)
-        #clicks item name on left    
-        pygui.click(x=187, y=164)
+        #clicks item name on left
+        if item_name.lower() == 'pliers' or item_name.lower() == 'screwdriver':
+            #these items were problomatic so added extra check
+            pygui.click(x=155, y=234)
+        else:    
+            pygui.click(x=187, y=164)
         sleep(1)
         
-    def checkAndBuyRecipe(self, repeat_names, item_info):
+        
+    def checkAndBuyRecipe(self, recipe):
         #EXPECTS YOU TO HAVE ALREADY MOVED TO IT ON SCREEN
-        #repeat names is a list of the names of the repeatable items as seen in the item_icon folder 
-        #if name+ready_item...png found, don't add to list
-        #if not ready found, add to list
-        #if neither found, throw error
-        #item_info is a dict. item_name:item_count
-        #ADD BUY STACK FUN
-        base_item_info = item_info
-        
-        #this checks if repeat items need to be added to shopping list
-        
-        if len(repeat_names) > 3:
-            print("Error 0001: Repeat items are never higher than 3")
-            return 
-        
-        os.chdir(self.item_path)
-        
-        for name in repeat_names:
-            #This needs to still exist but just check status
-            if pygui.locateOnScreen(str(name)+"Ready_item_icon.png", confidence=0.9) != None:
-                print(str(name) + ' is already bought')
-                continue
-            elif pygui.locateOnScreen(str(name)+"NotReady_item_icon.png", confidence=0.9) != None:
-                print(str(name) + ' added to shopping list')
-                item_info[name] = 1
-            else:
-                print("Error 0000: Item not on screen, defaulting to add to shopping list")
-                item_info[name] = 1
-                continue
-            
+        #THIS IS THE BRUTE FORCE BUY. DOES NO CHECKS FOR CURRENT ITEM COUNT    
+        #recipe {"ingredient_1":count, ...}
+ 
         print("<><><><><><><><><><>")
         print("Shopping list ready")
         print("---------------------")
-        print(item_info)
+        print(recipe)
         print("<><><><><><><><><><>")
 
         self.bottomFlea()
         sleep(1)        
                 
-        for name, count in item_info.items():
+        for name, count in list(recipe.items()):
             _name = name
-            if "-" in _name:
-                #adds quotes to names that need quotes
-                #may not need, as file names aren't being passed
-               _name = _name.replace("-", "\"" )
+            if name.endswith("-_-"):
+                _name = name[:-3]
+            
             self.fleaMarketSearch(_name)
             self.buyOnFlea(count, _name)        
             sleep(1)    
      
+        
     def reusableExitLoop(self, item_name):
         #item name is a string to a .png
         #img should be of item + count and a side recipe item to confirm its at the right one
         #NEED TO TEST SCROLL COUNT
         _exit = False
         _i = 0
+        recipe_tuple, recipe_pic_name = self.findRecipe(item_name)
         while _exit == False:
-            os.chdir(self.item_path)
-            if pygui.locateOnScreen(item_name , confidence=0.9) != None: 
+            os.chdir(self.workbench_recipes_path)
+            
+            if pygui.locateOnScreen(recipe_pic_name + "_recipe.png", confidence=0.9) != None: 
                 _exit = True
-            if _i > 20:
+            if _i > 150:
                 print("No item found")
                 return None
             _i += 1
             pygui.moveTo(x=1410, y=655) 
-            pygui.scroll(-100)
+            pygui.scroll(-4000)
             print('scrolled') 
-            sleep(0.25)
+            sleep(0.05)
+            
             
     def locateWorkbench(self):
         #returns True if workbench located, False if not
@@ -338,6 +358,7 @@ class Hideout:
                 return True
         return False          
             
+    
     def returnToMainMenu(self):
         pygui.press('esc')
         sleep(0.1)
@@ -347,54 +368,66 @@ class Hideout:
         sleep(0.1)
         pygui.press('esc') 
         sleep(0.5)
+    
+    def findRecipe(self, recipe_name):
+        #returns tuple (recipe_dict, recipe_pic_name)
+        recipe_pic_name = " "
         
-    def makeRecipe(self, recipe):
+        for name, value in list(self.workbench_names.items()): 
+            if name == recipe_name:
+                recipe_pic_name = value
+                break
+        if recipe_pic_name == " ":
+            print("Error: No recipe pic name grabbed")
+            return 'fail'
+        for name, value in list(self.full_workbench_recipes.items()):
+            if name == recipe_name:
+                return ((name, value), recipe_pic_name)
+        print("Error: No recipe for " + recipe_name + " found")
+        return 'fail'
         
+        
+        
+    def makeRecipe(self, recipe_name): 
         #untested, good start though
-        #currently only does workbench
-        
-        #recipe is a dict
-            #{"item_name": item_name , "repeats":[str1,str2*,str3*] , "item_info":{_item_name:item_count} , "start":"item_nameStart_Recipe.png" }
+        #currently only does workbench 
         #NEED TO CHANGE TO MATCH CURRENT STRUCTURE
             #current : {recipe_name:{Ingredient_1:count, Ingredient_2:count}}
             #need to take start pics
-                #may be able to edit together item photo and start next to it to avoid having to get items
-        
+                #may be able to edit together item photo and start next to it to avoid having to get items 
         #Takes you to hideout from home screen
         self.returnToMainMenu()
         self.goToHideout()
-        sleep(0.5) 
-        
-        workbench = self.locateWorkbench()
-        
-        if workbench == True:
-                
+        sleep(0.5)  
+        workbench = self.locateWorkbench() 
+        if workbench == True:   
             sleep(1)
             os.chdir(self.item_path) 
-            self.reusableExitLoop()
-            
-            #then need to check if recipe completely ready (use an img of recipe w/ white start next to it)
-            #if ready, just actiavte
-            
-            self.checkAndBuyRecipe(recipe["repeats"], recipe["item_info"]) 
-            
+            self.reusableExitLoop(recipe_name) 
+            recipe_tuple, recipe_pic_name = self.findRecipe(recipe_name)
+            _recipe_name, recipe_value = recipe_tuple 
+            self.checkAndBuyRecipe(recipe_value)  
             self.goToHideout()
             _workbench = self.locateWorkbench()
             if _workbench == True:
-                self.reusableExitLoop()
-                os.chdir(self.recipes_path)
-                item_loc = pygui.locateOnScreen(recipe["start"], confidence=0.9) 
+                self.reusableExitLoop(recipe_name)
+                os.chdir(self.workbench_recipes_path)
+                #NEED TO FIGURE OUT START SOLUTION
+                item_loc = pygui.locateOnScreen(recipe_pic_name + "_recipe.png", confidence=0.85) 
+                item_left_x = item_loc.left
+                item_width = item_loc.width
                 if item_loc != None:
-                    pygui.click(pygui.center(item_loc))
+                    item_x, item_y = pygui.center(item_loc) 
+                    #shift 72 pixels right to click start button
+                    pygui.click(x=item_left_x + item_width + 72, y=item_y)
                     sleep(0.1)
                     pygui.press("y")
-                    print("Recipe for " + str(recipe["item_name"] + " successfully started"))
+                    print("Recipe for " + recipe_name + " successfully started") 
                     #successful start
                     return None
                 else:
-                    print("Error 0003: No " + str(recipe["item_name"] + " start found"))
-                    return "fail"
-            
+                    print("Error 0003: No " + recipe_name + " start found") 
+                    return "fail" 
             else:
                 print("Error 0002: No workbench node found. Exiting... ")
                 return "fail" 
@@ -402,16 +435,19 @@ class Hideout:
             print("Error 0002: No workbench node found. Exiting... ")
             return "fail"
  
+    
     def goToTraders(self):
         #assumes you can see button
         #clicks bottom traders button
         pygui.click(x=1112, y=1053)
         sleep(1)
         
+        
     def goToJaeger(self):
         #assumes you are on traders screen
         pygui.click(x=1227, y=664)
         sleep(1)
+        
         
     def clickMidLeft(self):
         first_loc = pygui.locateOnScreen("NoFuel_gene.png")
@@ -424,6 +460,7 @@ class Hideout:
         pygui.click(x=point_x, y=point_y)
         sleep(0.25)
         
+        
     def quickOrganizeInv(self):
         self.returnToMainMenu()
         #click bottom character
@@ -433,6 +470,7 @@ class Hideout:
         pygui.click(x=1244, y=922)
         sleep(0.25)
         pygui.press('y') 
+        
         
     def goToGenerator(self):
         self.goToHideout()
@@ -448,6 +486,7 @@ class Hideout:
         print("Error 0005: Generator not found")
         return 'fail'    
   
+    
     def generatorChecker(self):
         #Checks if generator has room for more fuel, adds or buys and adds if needed
         #generator images in submenu, _gene
@@ -486,6 +525,7 @@ class Hideout:
             print("Large Fuel Loaded")
             return
    
+    
     def goToWater(self):
         self.goToHideout()
         self.hideoutReset()
@@ -499,6 +539,7 @@ class Hideout:
                 return
         print("Error 0007: Water node not found ")
         return "fail"        
+    
     
     def waterChecker(self):
         #all checkers auto load and buy if empty 
@@ -529,6 +570,7 @@ class Hideout:
            pygui.click(x=_water_x, y=_water_y)
            print("Water filter successfully added...") 
     
+    
     def goToBooze(self):
         self.goToHideout()
         self.hideoutReset()
@@ -543,14 +585,11 @@ class Hideout:
         print("Error 0008: Booze node not found somehow")
         return "fail"
     
-    def boozeChecker(self):
-        
-        #NEEDS STATUS PICS
-        
-        self.goToBooze()
-        
-        os.chdir(self.submenu_path)
-        
+    
+    def boozeChecker(self): 
+        #NEEDS STATUS PICS 
+        self.goToBooze() 
+        os.chdir(self.submenu_path) 
         if pygui.locateOnScreen("BoozeProducingStatus.png", confidence=0.9) != None:
             print("Booze currently being produced...")
             return
@@ -558,33 +597,27 @@ class Hideout:
         #if 0/1, buy water
         #if 0/2 buy 2 sugar
         #if 1/2 buy 1 sugar
-        #start when set
-        
+        #start when set 
         superwater_count = 0
         if pygui.locateOnScreen("0-1Status.png", confidence=0.9) != None:
-            superwater_count = 1 
-            
+            superwater_count = 1  
         sugar_count = 0
         if pygui.locateOnScreen("0-2Status.png", confidence=0.9) != None:
             sugar_count = 2
         elif pygui.locateOnScreen("1-2Status.png", confidence=0.9) != None:    
-            sugar_count = 1
-            
+            sugar_count = 1 
         if superwater_count > 0:
             self.bottomFlea()
             self.fleaMarketSearch("Canister with purified water")
             self.buyOnFlea(1, "Canister with purified water")
-            sleep(0.5)
-            
+            sleep(0.5)           
         if sugar_count > 0:
             self.goToHideout()
             self.bottomFlea()
             self.fleaMarketSearch("Pack of sugar")
             self.buyOnFlea(sugar_count, "Pack of sugar", 3)
-            sleep(0.5)
-            
-        self.goToBooze() 
-        
+            sleep(0.5)  
+        self.goToBooze()  
         if pygui.locateOnScreen("StartStatus.png", confidence=0.9) == None:
             print("Error 0009: No start found")
             return "fail"
@@ -595,6 +628,7 @@ class Hideout:
         print('Successfully began moonshine production...')
         return 
  
+    
     def goToAir(self):
         #NOTE: no pics exist for this, need to take pics
         self.goToHideout()
@@ -610,11 +644,10 @@ class Hideout:
         print("Error 0010: Booze node not found somehow")
         return "fail"
     
+    
     def airChecker(self):
-        self.goToAir()
-        
-        os.chdir(self.submenu_path)
-        
+        self.goToAir() 
+        os.chdir(self.submenu_path) 
         if pygui.locateOnScreen("NoFuel_gene.png", confidence=0.9) == None:
             print("Air filter currently loaded and running...")
             return

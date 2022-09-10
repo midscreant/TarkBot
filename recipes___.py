@@ -149,7 +149,7 @@ partial_items = ["Water Filter", "FP-100 Filter Absorber", "Metal Fuel Tank", "E
 scav_items = ["Intelligence folder", "\"Fierce Hatchling\" Moonshine"] 
 
 
-new_names = {"7.62x39mm BP gzh":"762BP", 
+new_workbench_names = {"7.62x39mm BP gzh":"762BP", 
             "9x18mm PM RG028 gzh":"918RG028",
             "5.45x39mm PP gs":"545PP",
             "5.56x45mm Warmageddon":"556WAR",
@@ -210,6 +210,61 @@ new_names = {"7.62x39mm BP gzh":"762BP",
             "12.7x55mm PS12B":"PS12B",
             "Round Pliers":"PLIERS",
             "9x39mm BP gs":"939BP" }
+
+new_intel_names = {"Secure Flash Drive":"FLASH",
+                   "Intelligence Folder":"INTEL",
+                   "Virtex Programmable Processor":"VIRTEX",
+                   "Military COFDM Wireless Signal Transmitter":"COFDM",
+                   "VPX Flash Storage Module":"VPX",
+                   "UHF RFID Reader":"RFIDR",
+                   "Graphics Card":"GCARD",
+                   "TerraGroup Labs Keycard (Violet)":"VIOLET",
+                   "Object #11SR keycard":"11SR",
+                   "Topographic survey maps":"TOPO",
+                   "Military Flash Drive":"MFLASH" }
+
+new_nutrition_names = {"Can of Condensed Milk":"CONMILK",
+                       "Iskra Ration Pack":"ISKRA",
+                       "Wilston Cigarettes":"WILSTON",
+                       "Bottle of Water (0.6L)":"6WATER",
+                       "Bottle of Tarkovskaya Vodka":"VODKA",
+                       "Slickers Chocolate Bar":"SLICK",
+                       "Pack of Sugar":"SUGAR",
+                       "Can of Max Energy energy drink":"MAX",
+                       "Can of Beef Stew (Small)":"BEEF",
+                       "Can of Hot Rod Energy Drink":"HOT",
+                       "Bottle of \"Norvinskiy Yadreniy\" premium kvass (0.6L)":"KVASS",
+                       "Bottle of Dan Jackiel Whiskey":"WHISK",
+                       "Aquamari Water Bottle with Filter":"AQUA",
+                       "Emergency Water Ration":"EWR",
+                       "Can of Majaica Coffee Beans":"COFF",
+                       "Bottle of \"Pevko Light\" Beer":"BEER" }
+
+new_medstation_names = {"AI-2 medkit":"AI2",
+                          "IFAK individual first aid kit":"IFAK",
+                          "Grizzly medical kit":"GRIZZ",
+                          "Salewa first aid kit":"SALEWA",
+                          "Morphine Injector":"MORPH",
+                          "Propital regenerative stimulant injector":"PROP",
+                          "Surv12 field surgical kit":"SURV",
+                          "Medical bloodset":"BLOOD",
+                          "Vaseline balm":"VASE",
+                          "SJ6 TGLabs combat stimulant injector":"SJ6",
+                          "Portable defibrillator":"DEFIB",
+                          "xTG-12 antidote injector":"X12",
+                          "LEDX Skin Transilluminator":"LEDX",
+                          "CALOK-B hemostatic applicator":"CALOK",
+                          "M.U.L.E. stimulant injector":"MULE",
+                          "AFAK tactical individual first aid kit":"AFAK",
+                          "CMS surgical kit":"CMS",
+                          "Pile of meds":"MEDS",
+                          "SJ1 TGLabs combat stimulant injector":"SJ1"}
+
+new_scav_names = { "MOON":"\"Fierce Hatchling\" Moonshine" ,
+                  "INTEL":"Intelligence Folder" ,
+                  "950":"95000 Rubles" ,
+                  "150":"15000 Rubles" ,
+                  "25":"2500 Rubles" }
  
 
 #<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
@@ -219,7 +274,11 @@ all_recipes = {"Workbench":[workbench_1_recipes, workbench_2_recipes, workbench_
                "Nutrition":[nutrition_1_recipes, nutrition_2_recipes, nutrition_3_recipes],
                "Intel":[intel_2_recipes, intel_3_recipes],
                "Medstation":[medstation_1_recipes, medstation_2_recipes, medstation_3_recipes],
-               "Workbench - Names":new_names} 
+               "Workbench - Names":new_workbench_names,
+               "Intel - Names":new_intel_names,
+               "Nutrition - Names":new_nutrition_names,
+               "Medstation - Names":new_medstation_names,
+               "Scav - Names":new_scav_names} 
 
 
 

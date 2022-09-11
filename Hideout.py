@@ -89,7 +89,7 @@ class Hideout:
         sleep(0.25)
          
         
-    def hideoutMoveLeft(self):
+    def hideoutMoveLeft(self, number=0): 
         self.hideoutReset()
         #Move left 
         pygui.moveTo(x=1,y=540)
@@ -114,22 +114,26 @@ class Hideout:
         pygui.click(x=1228, y=1066)
         sleep(0.5)
     
-    def startRecipe(self, item_pic_name, node_name, status=None):
+    def startRecipe(self, item_pic_name, node_name):
         
-        if node_name == "med": 
+        if item_pic_name == tuple:
+            item_pic_name_list = item_pic_name
+            item_pic_name = item_pic_name_list[0]
+            node_name = item_pic_name_list[1]
+        
+        if node_name.lower() == "med": 
             os.chdir(self.medstation_recipes_path)
-        elif node_name == "intel": 
+        elif node_name.lower() == "intel": 
             os.chdir(self.intel_recipes_path)
-        elif node_name == "nutrition": 
+        elif node_name.lower() == "nutrition": 
             os.chdir(self.nutrition_recipes_path)
-        elif node_name == "workbench": 
+        elif node_name.lower() == "workbench": 
             os.chdir(self.workstation_recipes_path)
-        elif node_name == "scav": 
+        elif node_name.lower() == "scav": 
             os.chdir(self.scav_recipes_path)
-        # item_loc = None
-        # if status != None:
-        #     item_loc = pygui.locateOnScreen(item_pic_name + "_status.png", confidence=0.925)
-        # else:    
+        else:
+            print("Error: Invalid node name...")
+            return 'fail' 
         item_loc = pygui.locateOnScreen(item_pic_name + "_recipe.png", confidence=0.925) 
         if item_loc != None:
             item_left_x = item_loc.left
@@ -304,7 +308,7 @@ class Hideout:
                 _exit = True
             if _i > _exit_count:
                 print("No item found after " + str(_exit_count) + " attempts")
-                return None
+                return 'fail'
             _i += 1
             pygui.moveTo(x=1410, y=655) 
             pygui.scroll(-4000)
@@ -312,6 +316,8 @@ class Hideout:
  
     
     def locateNode(self, node_name):
+        if type(node_name) == tuple:
+            node_name = str(node_name[0])
         self.goToHideout()
         #add
         #node names - "med", "nutrition", "workbench", "intel"
@@ -332,8 +338,10 @@ class Hideout:
                 node_x, node_y = pygui.locateCenterOnScreen(file, confidence=0.8)
                 pygui.click(x=node_x, y=node_y)
                 print(node_name + " found and clicked...")
+                sleep(0.5)
                 return True
-        return False    
+        print("No node found. Could not click")
+        return "fail"
     
     
     def returnToMainMenu(self):
@@ -369,12 +377,12 @@ class Hideout:
                 recipe_pic_name = value
                 break
         if recipe_pic_name == " ":
-            print("Error: No recipe pic name grabbed")
+            print("Error: No recipe pic name grabbed") 
             return 'fail'
         for name, value in list(dir_2.items()):
-            if name == recipe_name:
+            if name == recipe_name: 
                 return ((name, value), recipe_pic_name)
-        print("Error: No recipe for " + recipe_name + " found")
+        print("Error: No recipe for " + recipe_name + " found") 
         return 'fail'
         
    
@@ -391,14 +399,14 @@ class Hideout:
             node_name = "med"    
         else:    
             print("Error: recipe not found, so no node can be pressed")
+            pygui.press("esc")
             return 'fail'
  
         #basic testing complete
         #need to test confidence levels
         #error checking is next big step
         self.returnToMainMenu()
-        self.goToHideout()
-        sleep(0.5)  
+        self.goToHideout() 
         node_located = self.locateNode(node_name) 
         if node_located == True:   
             sleep(1) 
@@ -411,11 +419,14 @@ class Hideout:
             if _node_located == True:
                 self.reusableExitLoop(recipe_name, node_name)
                 self.startRecipe(recipe_pic_name, node_name)
+                pygui.press("esc")
             else:
                 print("Error 0002: No workbench node found. Exiting... ")
+                pygui.press("esc")
                 return "fail" 
         else:
             print("Error 0002: No workbench node found. Exiting... ")
+            pygui.press("esc")
             return "fail"
         
     
@@ -465,6 +476,7 @@ class Hideout:
         #CHANGE NoFuel_gene.png to AirFilterIN (need to create)
         if pygui.locateOnScreen("NoFuel_gene.png", confidence=0.9) == None:
             print("Air filter currently loaded and running...")
+            pygui.press("esc")
             return
         self.clickMidLeft()
         if pygui.locateOnScreen("NoFuelLoader_gene.png", confidence=0.9) != None:
@@ -476,13 +488,16 @@ class Hideout:
             self.clickMidLeft() 
             if pygui.locateOnScreen("AirLoader_gene.png", confidence=0.9) == None:
                 print("Error 0011: Air func unknown failure")
+                pygui.press("esc")
                 return "fail"
             _air_x, _air_y = pygui.locateCenterOnScreen("Air_gene.png", confidence=0.9)
             pygui.click(x=_air_x, y=_air_y)
+            pygui.press("esc")
             print("Air filter successfully added...")
         else:
            _air_x, _air_y = pygui.locateCenterOnScreen("Air_gene.png", confidence=0.9)
            pygui.click(x=_air_x, y=_air_y)
+           pygui.press("esc")
            print("Air filter successfully added...")
            
       
@@ -492,6 +507,7 @@ class Hideout:
         os.chdir(self.submenu_path) 
         if pygui.locateOnScreen("BoozeProducingStatus.png", confidence=0.9) != None:
             print("Booze currently being produced...")
+            pygui.press("esc")
             return
         #Need 5 pics: 0/1, 1/1, 0/2, 1/2, 2/2
         #if 0/1, buy water
@@ -510,23 +526,25 @@ class Hideout:
             self.bottomFlea()
             self.fleaMarketSearch("Canister with purified water")
             self.buyOnFlea(1, "Canister with purified water")
-            sleep(0.5)           
+            sleep(0.25)           
         if sugar_count > 0:
             self.goToHideout()
             self.bottomFlea()
             self.fleaMarketSearch("Pack of sugar")
             self.buyOnFlea(sugar_count, "Pack of sugar", 3)
-            sleep(0.5)  
+            sleep(0.25)  
         self.locateNode('booze') 
         if pygui.locateOnScreen("StartStatus.png", confidence=0.9) == None:
             print("Error 0009: No start found")
+            pygui.press("esc")
             return "fail"
         start_x, start_y = pygui.locateCenterOnScreen("StartStatus.png", confidence=0.9)
         pygui.click(x=start_x, y=start_y)
-        sleep(0.25)
+        sleep(0.1)
         pygui.press('y')
-        print('Successfully began moonshine production...')
-        return
+        print('Successfully began moonshine production...') 
+        sleep(0.1)
+        pygui.press("esc")
     
     
     def btcChecker(self):
@@ -536,8 +554,11 @@ class Hideout:
         if pygui.locateOnScreen("GetItemsStatus.png", confidence=0.9) != None:
             status_x, status_y = pygui.locateOnScreen("GetItemsStatus.png", confidence=0.9)
             pygui.click(x=status_x, y=status_y)
-            print("Bitcoins claimed...") 
+            print("Bitcoins claimed...")
+            pygui.press("esc")
+            return
         print('No bitcoins to be claimed...')
+        pygui.press("esc")
        
 
     def generatorChecker(self):
@@ -550,15 +571,13 @@ class Hideout:
             fuel_loc_x, fuel_loc_y = pygui.locateCenterOnScreen("BigFuelFull_gene.png")
             pygui.click(x=fuel_loc_x, y=fuel_loc_y)
             print("Large Fuel Loaded")
-            #Then grab updated time left
-            sleep(0.5)
+            pygui.press("esc") 
             return
         elif pygui.locateOnScreen("SmallFuelLoader_gene.png", confidence=0.9) != None:
             fuel_loc_x, fuel_loc_y = pygui.locateCenterOnScreen("SmallFuelFull_gene.png")
             pygui.click(x=fuel_loc_x, y=fuel_loc_y)
-            print("Small Fuel Loaded")
-            #Then grab updated time left
-            sleep(0.5)
+            print("Small Fuel Loaded") 
+            pygui.press("esc")
             return
         else:
             self.fleaMarketSearch("Metal Fuel Tank") 
@@ -577,6 +596,7 @@ class Hideout:
             fuel_loc_x, fuel_loc_y = pygui.locateOnScreen("BigFuelFull_gene.png", confidence=0.9)
             pygui.click(x=fuel_loc_x, y=fuel_loc_y)
             print("Large Fuel Loaded")
+            pygui.press("esc")
             return     
         
     
@@ -587,6 +607,7 @@ class Hideout:
         #if there's already a filter loaded, function ends
         if pygui.locateOnScreen("NoFuel_gene.png", confidence=0.9) == None:
             print("Water filter currently loaded and running...")
+            pygui.press("esc")
             return
         self.clickMidLeft()
         #if there's no water filters ready to be loaded, buy one on market
@@ -600,14 +621,17 @@ class Hideout:
             self.clickMidLeft() 
             if pygui.locateOnScreen("WaterLoader_gene.png", confidence=0.9) == None:
                 print("Error 0006: Water func unknown failure")
+                pygui.press("esc")
                 return "fail"
             _water_x, _water_y = pygui.locateCenterOnScreen("Water_gene.png", confidence=0.9)
             pygui.click(x=_water_x, y=_water_y)
             print("Water filter successfully added...")
+            pygui.press("esc")
         else:
            _water_x, _water_y = pygui.locateCenterOnScreen("Water_gene.png", confidence=0.9)
            pygui.click(x=_water_x, y=_water_y)
            print("Water filter successfully added...")
+           pygui.press("esc")
            
            
     def gcardBuyAndAdd(self, count=1):
@@ -618,6 +642,7 @@ class Hideout:
         self.locateNode('btc')
         pygui.click(x=1272, y=712)
         pygui.press('esc')
+        
         
     def runScavCase(self, item):
         #item is which scav case item to run
@@ -635,13 +660,18 @@ class Hideout:
                 self.buyOnFlea(1, item_full_name)
                 self.locateNode("scav")
                 self.startRecipe(item, "scav")
+                pygui.press("esc")
                 return
             else:
                 print("Not enough roubles to run " + item_full_name + " scav case")
                 return
         else:
             print("ERROR: Invalid item passage")
-            return 'fail'               
+            return 'fail'
+
+ 
+ 
+                          
         
         
  

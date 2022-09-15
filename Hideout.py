@@ -84,12 +84,12 @@ class Hideout:
     def hideoutReset(self): 
         #reset to middle
         pygui.press('enter')
-        sleep(1) 
+        sleep(0.75) 
         pygui.press('esc')
         sleep(0.25)
          
         
-    def hideoutMoveLeft(self, number=0): 
+    def hideoutMoveLeft(self): 
         self.hideoutReset()
         #Move left 
         pygui.moveTo(x=1,y=540)
@@ -102,7 +102,7 @@ class Hideout:
         self.hideoutReset()
         #Move right
         pygui.moveTo(x=1919,y=540)
-        sleep(3)
+        sleep(0.3)
         pygui.moveTo(x=960,y=540) 
         sleep(0.3)
  
@@ -114,13 +114,16 @@ class Hideout:
         pygui.click(x=1228, y=1066)
         sleep(0.5)
     
-    def startRecipe(self, item_pic_name, node_name):
-        
-        if item_pic_name == tuple:
+    def startRecipe(self, item_pic_name, node_name=None):
+        print(item_pic_name)
+        if type(item_pic_name) == tuple:
+            if node_name != None:
+                print("Error. Both tuple and node name")
+                return 'fail' 
             item_pic_name_list = item_pic_name
-            item_pic_name = item_pic_name_list[0]
-            node_name = item_pic_name_list[1]
-        
+            print(item_pic_name_list)
+            item_pic_name = item_pic_name_list[0] 
+            node_name = item_pic_name_list[1] 
         if node_name.lower() == "med": 
             os.chdir(self.medstation_recipes_path)
         elif node_name.lower() == "intel": 
@@ -351,6 +354,8 @@ class Hideout:
         sleep(0.1)
         pygui.press('esc')
         sleep(0.1)
+        pygui.press('esc')
+        sleep(0.1)
         pygui.press('esc') 
         sleep(0.5)
     
@@ -471,6 +476,8 @@ class Hideout:
     
     
     def airChecker(self):
+        self.returnToMainMenu()
+        self.goToHideout() 
         self.locateNode('air') 
         os.chdir(self.submenu_path) 
         #CHANGE NoFuel_gene.png to AirFilterIN (need to create)
@@ -501,7 +508,9 @@ class Hideout:
            print("Air filter successfully added...")
            
       
-    def boozeChecker(self): 
+    def boozeChecker(self):
+        self.returnToMainMenu()
+        self.goToHideout() 
         #NEEDS STATUS PICS 
         self.locateNode('booze')
         os.chdir(self.submenu_path) 
@@ -548,6 +557,8 @@ class Hideout:
     
     
     def btcChecker(self):
+        self.returnToMainMenu()
+        self.goToHideout() 
         #deals with btc not graphics
         self.locateNode('btc')
         os.chdir(self.submenu_path)
@@ -562,6 +573,8 @@ class Hideout:
        
 
     def generatorChecker(self):
+        self.returnToMainMenu()
+        self.goToHideout() 
         #Checks if generator has room for more fuel, adds or buys and adds if needed
         #generator images in submenu, _gene
         self.locateNode('generator')
@@ -601,6 +614,8 @@ class Hideout:
         
     
     def waterChecker(self):
+        self.returnToMainMenu()
+        self.goToHideout() 
         #all checkers auto load and buy if empty 
         self.locateNode('water')
         os.chdir(self.submenu_path)
@@ -635,6 +650,8 @@ class Hideout:
            
            
     def gcardBuyAndAdd(self, count=1):
+        self.returnToMainMenu()
+        self.goToHideout() 
         #buys a graphics card and adds it to btc farm 
         self.bottomFlea()
         self.fleaMarketSearch('Graphics Card')
@@ -645,6 +662,8 @@ class Hideout:
         
         
     def runScavCase(self, item):
+        self.returnToMainMenu()
+        self.goToHideout() 
         #item is which scav case item to run
             #MOON, 950, 25, 150, INTEL
         self.locateNode("scav")
@@ -653,6 +672,7 @@ class Hideout:
             item_full_name = self.scav_names[item]
             if pygui.locateOnScreen(item + "_status.png", confidence=0.925) != None:
                 self.startRecipe(item, "scav")
+                print("Scav case started with " +item+ "...")
                 return
             if item == "MOON" or item == "INTEL":   
                 self.bottomFlea()
@@ -664,7 +684,7 @@ class Hideout:
                 return
             else:
                 print("Not enough roubles to run " + item_full_name + " scav case")
-                return
+                return 'fail'
         else:
             print("ERROR: Invalid item passage")
             return 'fail'

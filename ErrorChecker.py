@@ -22,15 +22,33 @@ class ErrorChecker:
         #MUST CREATE HIDEOUT OBJECT TO WORK
         #may need to pass in arguments for function too 
         
+        print(iterator)
+        
         if iterator == 3:
             print(funct_name+" failed after 3 attempts...")
             return "MEGAFAIL" 
             
         for name, value in self.funct_list:
-            if funct_name.lower() == str(name).lower(): 
+            if funct_name.lower() == str(name).lower():
                 print("Name and funct found!")
-                status = value(self.the_hideout, arguments) 
-                print(status)
+                print(value)
+                status = None
+                if len(arguments) > 0: 
+                    _exit = False
+                    new_args = arguments[0]
+                    if type(arguments) == tuple and type(new_args) != tuple:
+                        _exit = True
+                        status = value(self.the_hideout, arguments)
+                    while _exit == False:
+                        if type(new_args[0]) == tuple: 
+                    #WILL FAIL FOR FUNCTIONS THAT TAKE TUPLES AS ARGS
+                            new_args = new_args[0]
+                            continue
+                        else:
+                            status = value(self.the_hideout, new_args) 
+                            _exit = True
+                else:
+                    status = value(self.the_hideout)
                 if status == "fail": 
                     status_2 = self.errorChecker(funct_name, iterator+1, arguments)
                     if status_2 == "MEGAFAIL":
@@ -48,4 +66,6 @@ class ErrorChecker:
         return "MEGAFAIL"
 
 my_checker = ErrorChecker()
-my_checker.errorChecker( "startRecipe", 0, "MOON", "scav" )        
+# print(my_checker.errorChecker( "startRecipe",0,"MOON", "scav"))  
+# print(my_checker.errorChecker("hideoutMoveLeft", 0))
+       

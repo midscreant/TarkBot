@@ -16,7 +16,7 @@ import keyboard
 
 # {"workbench":(recipe_name, run_count), "intel":(recipe_name, run_count), "med":(recipe_name, run_count), 
 #  "lav":(recipe_name, run_count), "nutrition":(recipe_name, run_count), "scav":(recipe_name, run_count), 
-#  "booze":run_count (may be -1, which means run the whole time. same w others), "water":run_count, "btc":lookup_boolean, 
+#  "booze":run_count (may be -1, which means run the whole time. same w others), "water":run_count,, 
 #  "generator":run_count (represents how many big cans to add throughout run. -1 means always keep filled w/ at least 1 tank), 
 #  "air":run_count (almost always gonna be 0),
 #  "runtime":runtime, "checkup":checkup }+
@@ -24,10 +24,6 @@ import keyboard
 class Orchestrator:
     
     def __init__(self, preset_dict):
-        
-        #Should pass values you don't want going as None
-        
-        [self.workbench_tuple, self.intel_tuple, self.med_tuple, self.lav_tuple, self.nutrition_tuple, self.scav_tuple, self.water_count, self.booze_count, self.generator_count, self.air_count]
         
         self.workbench_tuple = ("workbench",preset_dict["workbench"])
         self.intel_tuple = ("intel", preset_dict["intel"])
@@ -40,7 +36,9 @@ class Orchestrator:
         self.water_count = ("water",preset_dict["water"])
         self.booze_count = ("booze",preset_dict["booze"])
         self.generator_count = ("generator",preset_dict["generator"])
-        self.air_count = ("air",preset_dict["air"])
+        # self.air_count = ("air",preset_dict["air"])
+        
+        [self.workbench_tuple, self.intel_tuple, self.med_tuple, self.lav_tuple, self.nutrition_tuple, self.scav_tuple, self.water_count, self.booze_count, self.generator_count]
         
         #if runtime is not set, run count MUST be established for each item. no infinite unless runtime set to that
         #runtime should be in seconds
@@ -217,7 +215,7 @@ class Orchestrator:
             return 'fail'
         
     def runAll(self):
-        run_list = [self.workbench_tuple, self.intel_tuple, self.med_tuple, self.lav_tuple, self.nutrition_tuple, self.scav_tuple, self.water_count, self.booze_count, self.generator_count, self.air_count]
+        run_list = [self.workbench_tuple, self.intel_tuple, self.med_tuple, self.lav_tuple, self.nutrition_tuple, self.scav_tuple, self.water_count, self.booze_count, self.generator_count]
         end_list = []
         for item in run_list:
             if item[1] != None:
@@ -226,7 +224,9 @@ class Orchestrator:
                 #adds full item to list, including name
         self.runBtc()        
         for item in end_list:
-            if item[0] == "workbench":
+            if item[0] == "generator":
+                self.runGenerator()
+            elif item[0] == "workbench":
                 self.runWorkbench()
             elif item[0] == "intel":
                 self.runIntel()
@@ -242,8 +242,6 @@ class Orchestrator:
                 self.runWater
             elif item[0] == "booze":
                 self.runBooze()
-            elif item[0] == "generator":
-                self.runGenerator()
             elif item[0] == "air":
                 self.runAir()
             else:

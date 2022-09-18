@@ -82,7 +82,7 @@ workbench_3_recipes = {"23x75mm \"Zvezda\" flashbang round":{"Leatherman Multito
 #<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 #nutrition
  
-nutrition_1_recipes = {"Iskra Ration Pack":{"Army Crackers":1, "Can of Beef Stew (Small)":1, "Can of Squash Spread":1},
+nutrition_1_recipes = {"Iskra Ration Pack":{"Army Crackers":2, "Can of Beef Stew (Small)":1, "Can of Squash Spread":1},
                        "Bottle of \"Norvinskiy Yadreniy\" premium kvass (0.6L)":{"Emelya Rye Croutons":4, "Bottle of Water (0.6L)":2},
                        "Can of Beef Stew (Small)":{"Can of Beef Stew (Large)":1, "Can of Squash Spread":1, "Rye Croutons":1},
                        "Can of Max Energy energy drink":{"BakeEzy Cook Book":1, "Can of TarCola Soda":1, "Can of Majaica Coffee Beans":1, "Bottle of Water (0.6L)":1},

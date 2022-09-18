@@ -1,12 +1,5 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sat Sep 17 16:59:28 2022
-
-@author: vinch
-"""
-
-# -*- coding: utf-8 -*-
-"""
 Created on Tue Sep 13 19:16:29 2022
 
 @author: vinch
@@ -67,7 +60,7 @@ class Orchestrator:
         self.btc_runs = 0
         
         self.my_hideout = Hideout(self.root_path)
-        self.my_checker = ErrorChecker()
+        self.my_checker = ErrorChecker(self.root_path)
         self.initial_epoch = time()
         
         
@@ -75,23 +68,23 @@ class Orchestrator:
         if self.workbench_runs == self.workbench_tuple[1][1]:
             print("Workbench run count already reached...")
             return
-        # try:
-        status = self.my_checker.errorChecker(self.my_hideout.makeRecipe, self.workbench_tuple[1][0]) 
-        if status == "fail":
-            print("Error: Workbench failure. Aborting attempt...")
+        try:
+            status = self.my_checker.errorChecker("makeRecipe", 0, self.workbench_tuple[1][0]) 
+            if status == "MEGAFAIL":
+                print("Error: Workbench failure. Aborting attempt...")
+                return 'fail'
+            self.workbench_runs += 1
+        except:
+            print("Error: Fatal error while running workbench")
             return 'fail'
-        self.workbench_runs += 1
-        # except:
-        #     print("Error: Fatal error while running workbench")
-        #     return 'fail'
         
     def runIntel(self):
         if self.intel_runs == self.intel_tuple[1][1]:
             print("Intel run count already reached...")
             return
         try:
-            status = self.my_checker.errorChecker(self.my_hideout.makeRecipe, self.intel_tuple[1][0]) 
-            if status == "fail":
+            status = self.my_checker.errorChecker("makeRecipe", 0, self.intel_tuple[1][0]) 
+            if status == "MEGAFAIL":
                 print("Error: Intel failure. Aborting attempt...")
                 return 'fail'
             self.intel_runs += 1
@@ -104,8 +97,8 @@ class Orchestrator:
             print("Medstation run count already reached...")
             return
         try:
-            status = self.my_checker.errorChecker(self.my_hideout.makeRecipe, self.med_tuple[1][0]) 
-            if status == "fail":
+            status = self.my_checker.errorChecker("makeRecipe", 0, self.med_tuple[1][0]) 
+            if status == "MEGAFAIL":
                 print("Error: Medstation failure. Aborting attempt...")
                 return 'fail'
             self.med_runs += 1
@@ -118,8 +111,8 @@ class Orchestrator:
             print("Lavatory run count already reached...")
             return
         try:
-            status = self.my_checker.errorChecker(self.my_hideout.makeRecipe, self.lav_tuple[1][0]) 
-            if status == "fail":
+            status = self.my_checker.errorChecker("makeRecipe", 0, self.lav_tuple[1][0]) 
+            if status == "MEGAFAIL":
                 print("Error: Lavatory failure. Aborting attempt...")
                 return 'fail'
             self.lav_runs += 1
@@ -132,8 +125,8 @@ class Orchestrator:
             print("Nutrition run count already reached...")
             return
         try:
-            status = self.my_checker.errorChecker(self.my_hideout.makeRecipe, self.nutrition_tuple[1][0]) 
-            if status == "fail":
+            status = self.my_checker.errorChecker("makeRecipe", 0, self.nutrition_tuple[1][0]) 
+            if status == "MEGAFAIL":
                 print("Error: Nutrition failure. Aborting attempt...")
                 return 'fail'
             self.nutrition_runs += 1
@@ -146,8 +139,8 @@ class Orchestrator:
             print("Scav case run count already reached...")
             return
         try:
-            status = self.my_checker.errorChecker(self.my_hideout.makeRecipe, self.scav_tuple[1][0]) 
-            if status == "fail":
+            status = self.my_checker.errorChecker("runScavCase", 0, self.scav_tuple[1][0]) 
+            if status == "MEGAFAIL":
                 print("Error: Scav Case failure. Aborting attempt...")
                 return 'fail'
             self.scav_runs += 1
@@ -160,8 +153,8 @@ class Orchestrator:
             print("Water run count already reached...")
             return
         try:
-            status = self.my_checker.errorChecker(self.my_hideout.waterChecker) 
-            if status == "fail":
+            status = self.my_checker.errorChecker("waterChecker" ) 
+            if status == "MEGAFAIL":
                 print("Error: Water failure. Aborting attempt...")
                 return 'fail'
             self.water_runs += 1
@@ -174,8 +167,8 @@ class Orchestrator:
             print("Booze run count already reached...")
             return
         try:
-            status = self.my_checker.errorChecker(self.my_hideout.boozeChecker) 
-            if status == "fail":
+            status = self.my_checker.errorChecker("boozeChecker" ) 
+            if status == "MEGAFAIL":
                 print("Error: Booze failure. Aborting attempt...")
                 return 'fail'
             self.booze_runs += 1
@@ -188,8 +181,8 @@ class Orchestrator:
             print("Generator run count already reached...")
             return
         try:
-            status = self.my_checker.errorChecker(self.my_hideout.generatorChecker) 
-            if status == "fail":
+            status = self.my_checker.errorChecker("generatorChecker" ) 
+            if status == "MEGAFAIL":
                 print("Error: Generator failure. Aborting attempt...")
                 return 'fail'
             self.generator_runs += 1
@@ -202,8 +195,8 @@ class Orchestrator:
             print("Air run count already reached...")
             return
         try:
-            status = self.my_checker.errorChecker(self.my_hideout.airChecker) 
-            if status == "fail":
+            status = self.my_checker.errorChecker("airChecker" ) 
+            if status == "MEGAFAIL":
                 print("Error: Air failure. Aborting attempt...")
                 return 'fail'
             self.air_runs += 1
@@ -213,8 +206,10 @@ class Orchestrator:
         
     def runBtc(self): 
     # try:
-        status = self.my_checker.errorChecker(self.my_hideout.btcChecker)
-        if status == "fail":
+        print("a")
+        status = self.my_checker.errorChecker("btcChecker" ) 
+        print("b")
+        if status == "MEGAFAIL":
             print("Error: BTC failure. Aborting attempt...")
             return 'fail'
         self.btc_runs += 1

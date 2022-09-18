@@ -5,21 +5,14 @@ Created on Fri Sep 16 14:10:43 2022
 @author: vinch
 """
 
-#tkint
+from BootUp import BootUp
+from Orchestrator import Orchestrator
+from recipes___ import all_recipes
 
 import tkinter as tk
-from tkinter.messagebox import showinfo
-from recipes___ import all_recipes
-from Orchestrator import Orchestrator
+from tkinter import filedialog as fd
 from time import sleep
-
-# {"workbench":(recipe_name, run_count), "intel":(recipe_name, run_count), "med":(recipe_name, run_count), 
-#  "lav":(recipe_name, run_count), "nutrition":(recipe_name, run_count), "scav":(recipe_name, run_count), 
-#  "booze":run_count (may be -1, which means run the whole time. same w others), "water":run_count, "btc":lookup_boolean, 
-#  "generator":run_count (represents how many big cans to add throughout run. -1 means always keep filled w/ at least 1 tank), 
-#  "air":run_count (almost always gonna be 0),
-#  "runtime":runtime, "checkup":checkup }+
-
+import os
 
 # {"workbench":(workbench_value, workbench_count), "intel":(intel_value, intel_count), "med":(med_value, med_count), 
 #  "lav":(lav_value, lav_count), "nutrition":(nutrition_value, nutrition_count), "scav":(scav_value, scav_count), 
@@ -32,6 +25,8 @@ class TGui:
     
     def __init__(self):
         
+        self.root_path = os.getcwd()
+        
         #INITIAL CREATION
         self.root_window = tk.Tk()
         self.root_window.minsize(800, 675)
@@ -39,7 +34,13 @@ class TGui:
 
         self.test_recipes = ["test1", "test2", "test3"]
 
-        #MISSING LAVATORY AND AIR
+        #MISSING LAVATORY AND AIR - should just cut air who tf is gonna run air remotely
+            # next step is advanced error checking and bug testing
+                #error checking at major spots
+                    #may wanna check status of working nodes after starting to confirm
+            #after that is captcha problem
+                #try ocr text -> url strat
+            
         
         
         #VARIABLE CREATION
@@ -110,6 +111,8 @@ class TGui:
         
         self.main_label = tk.Label(self.root_window, font=("Arial Bold", 20), text="TarkBot v1.0")
         self.main_label.grid(column=0, row=0, padx=(2.5, 100), pady=5)
+        self.main_sublabel = tk.Label(self.root_window, font=("Arial", 8), text="Unplug all but one monitor")
+        self.main_sublabel.grid(column=0, row=1)
         
         self.preset_label = tk.Label(self.root_window, text="Preset", font=("Arial Bold", 8), borderwidth=2, relief="ridge")
         self.preset_label.grid(column=0, row=2, padx=2.5, pady=5)
@@ -118,16 +121,27 @@ class TGui:
         
         self.time_label = tk.Label(self.root_window, text="Time (15min x Entry)", font=("Arial Bold", 8), borderwidth=2, relief="ridge")
         self.time_label.grid(column=0, row=5, padx=2.5, pady=5)
-        self.time_entry = tk.Entry(self.root_window, textvariable=self.time_count, width=35, highlightthickness=2, highlightbackground="black", highlightcolor="red")
+        self.time_entry = tk.Entry(self.root_window, textvariable=self.time_count, width=35, highlightthickness=1, highlightbackground="black", highlightcolor="red")
         self.time_entry.grid(column=0, row=6, padx=2.5, pady=5)
         
         self.checkup_label = tk.Label(self.root_window, text="Checkup Freq (15min x Entry)", font=("Arial Bold", 8), borderwidth=2, relief="ridge")
         self.checkup_label.grid(column=0, row=8, padx=2.5, pady=5)
-        self.checkup_entry = tk.Entry(self.root_window, textvariable=self.checkup_count, width=35, highlightthickness=2, highlightbackground="black", highlightcolor="red")
+        self.checkup_entry = tk.Entry(self.root_window, textvariable=self.checkup_count, width=35, highlightthickness=1, highlightbackground="black", highlightcolor="red")
         self.checkup_entry.grid(column=0, row=9, padx=2.5, pady=5)
         
-        self.warning_label = tk.Label(self.root_window, text="RAPIDLY MOVE CURSOR TO A CORNER OF SCREEN\nREPEATEDLY TO CANCEL PROGRAM MID RUN", font=("Arial Bold", 15))
-        self.warning_label.grid(column=0, row=10, rowspan=9)
+        self.path_label = tk.Label(self.root_window, text="Path to BSGLauncher.exe", font=("Arial Bold", 8), borderwidth=2, relief="ridge")
+        self.path_label.grid(column=0, row=10, padx=2.5, pady=5)
+        self.path_space = tk.Label(self.root_window)
+        self.path_space.grid(column=0, row=11, padx=2.5, pady=5)
+        def selectFile():
+            file_path = fd.askopenfilename(initialdir="/", title="Find bsglauncher.exe", filetypes=(("Executables (.exe)", "*.exe"),))
+            self.path_space["text"] = file_path
+            #in future, save this to a txt file as saved config
+        self.select_button = tk.Button(self.root_window, text="Select file", width=10, command=selectFile)
+        self.select_button.grid(column=0, row=12, padx=2.5, pady=5)
+        
+        self.time_label = tk.Label(self.root_window,font=("Arial Bold", 15))
+        self.time_label.grid(column=0, row=13, rowspan=6)
         
         self.start_label = tk.Label(self.root_window, font=("Arial", 10))
         self.start_label.grid(column=0, row=19)
@@ -145,17 +159,17 @@ class TGui:
         
         self.generator_label = tk.Label(self.root_window, text="Generator (n x BigFuel)", font=("Arial Bold", 8), borderwidth=2, relief="ridge")
         self.generator_label.grid(column=1, row=2)
-        self.generator_entry = tk.Entry(self.root_window, textvariable=self.generator_count, width=20, highlightthickness=2, highlightbackground="black", highlightcolor="red")
+        self.generator_entry = tk.Entry(self.root_window, textvariable=self.generator_count, width=20, highlightthickness=1, highlightbackground="black", highlightcolor="red")
         self.generator_entry.grid(column=1, row=3, padx=2.5, pady=5)
         
         self.water_label = tk.Label(self.root_window, text="Water (n x Filter)", font=("Arial Bold", 8), borderwidth=2, relief="ridge")
         self.water_label.grid(column=1, row=5)
-        self.water_entry = tk.Entry(self.root_window, textvariable=self.water_count, width=20, highlightthickness=2, highlightbackground="black", highlightcolor="red")
+        self.water_entry = tk.Entry(self.root_window, textvariable=self.water_count, width=20, highlightthickness=1, highlightbackground="black", highlightcolor="red")
         self.water_entry.grid(column=1, row=6, padx=2.5, pady=5)
         
         self.booze_label = tk.Label(self.root_window, text="Booze", font=("Arial Bold", 8), borderwidth=2, relief="ridge")
         self.booze_label.grid(column=1, row=8)
-        self.booze_entry = tk.Entry(self.root_window, textvariable=self.booze_count, width=20, highlightthickness=2, highlightbackground="black", highlightcolor="red")
+        self.booze_entry = tk.Entry(self.root_window, textvariable=self.booze_count, width=20, highlightthickness=1, highlightbackground="black", highlightcolor="red")
         self.booze_entry.grid(column=1, row=9, padx=2.5, pady=5)
         
         
@@ -165,42 +179,42 @@ class TGui:
         self.workbench_label.grid(column=2, row=2)
         self.workbench_menu = tk.OptionMenu(self.root_window, self.workbench_value, *self.full_workbench_names)
         self.workbench_menu.grid(column=2, row=3)
-        self.workbench_entry = tk.Entry(self.root_window, textvariable=self.workbench_count, width=20, highlightthickness=2, highlightbackground="black", highlightcolor="red")
+        self.workbench_entry = tk.Entry(self.root_window, textvariable=self.workbench_count, width=20, highlightthickness=1, highlightbackground="black", highlightcolor="red")
         self.workbench_entry.grid(column=2, row=4, padx=2.5, pady=5)
         
         self.intel_label = tk.Label(self.root_window, text="Intel", font=("Arial Bold", 8), borderwidth=2, relief="ridge")
         self.intel_label.grid(column=2, row=5)
         self.intel_menu = tk.OptionMenu(self.root_window, self.intel_value, *self.full_intel_names)
         self.intel_menu.grid(column=2, row=6)
-        self.intel_entry = tk.Entry(self.root_window, textvariable=self.intel_count, width=20, highlightthickness=2, highlightbackground="black", highlightcolor="red")
+        self.intel_entry = tk.Entry(self.root_window, textvariable=self.intel_count, width=20, highlightthickness=1, highlightbackground="black", highlightcolor="red")
         self.intel_entry.grid(column=2, row=7, padx=2.5, pady=5)
         
         self.med_label = tk.Label(self.root_window, text="Medstation", font=("Arial Bold", 8), borderwidth=2, relief="ridge")
         self.med_label.grid(column=2, row=8)
         self.med_menu = tk.OptionMenu(self.root_window, self.med_value, *self.full_medstation_names)
         self.med_menu.grid(column=2, row=9)
-        self.med_entry = tk.Entry(self.root_window, textvariable=self.med_count, width=20, highlightthickness=2, highlightbackground="black", highlightcolor="red")
+        self.med_entry = tk.Entry(self.root_window, textvariable=self.med_count, width=20, highlightthickness=1, highlightbackground="black", highlightcolor="red")
         self.med_entry.grid(column=2, row=10, padx=2.5, pady=5)
         
         self.lav_label = tk.Label(self.root_window, text="Lavatory", font=("Arial Bold", 8), borderwidth=2, relief="ridge")
         self.lav_label.grid(column=2, row=11)
         self.lav_menu = tk.OptionMenu(self.root_window, self.lav_value, *self.test_recipes)
         self.lav_menu.grid(column=2, row=12)
-        self.lav_entry = tk.Entry(self.root_window, textvariable=self.lav_count, width=20, highlightthickness=2, highlightbackground="black", highlightcolor="red")
+        self.lav_entry = tk.Entry(self.root_window, textvariable=self.lav_count, width=20, highlightthickness=1, highlightbackground="black", highlightcolor="red")
         self.lav_entry.grid(column=2, row=13, padx=2.5, pady=5)
         
         self.nutrition_label = tk.Label(self.root_window, text="Nutrition", font=("Arial Bold", 8), borderwidth=2, relief="ridge")
         self.nutrition_label.grid(column=2, row=14)
         self.nutrition_menu = tk.OptionMenu(self.root_window, self.nutrition_value, *self.full_nutrition_names)
         self.nutrition_menu.grid(column=2, row=15)
-        self.nutrition_entry = tk.Entry(self.root_window, textvariable=self.nutrition_count, width=20, highlightthickness=2, highlightbackground="black", highlightcolor="red")
+        self.nutrition_entry = tk.Entry(self.root_window, textvariable=self.nutrition_count, width=20, highlightthickness=1, highlightbackground="black", highlightcolor="red")
         self.nutrition_entry.grid(column=2, row=16, padx=2.5, pady=5)
         
         self.scav_label = tk.Label(self.root_window, text="Scav", font=("Arial Bold", 8), borderwidth=2, relief="ridge")
         self.scav_label.grid(column=2, row=17)
         self.scav_menu = tk.OptionMenu(self.root_window, self.scav_value, *self.full_scav_names)
         self.scav_menu.grid(column=2, row=18)
-        self.scav_entry = tk.Entry(self.root_window, textvariable=self.scav_count, width=20, highlightthickness=2, highlightbackground="black", highlightcolor="red")
+        self.scav_entry = tk.Entry(self.root_window, textvariable=self.scav_count, width=20, highlightthickness=1, highlightbackground="black", highlightcolor="red")
         self.scav_entry.grid(column=2, row=19, padx=2.5, pady=5)
         
         
@@ -258,8 +272,13 @@ class TGui:
         
         if self.countCheck(self.time_count) == None or self.countCheck(self.checkup_count) == None:
             self.start_label["text"] = "Error: Time or checkup entry invalid. Must be int"
-            #Put this near start button
             return 'fail'
+        
+        if self.path_space["text"].lower().endswith("bsglauncher.exe") != True:
+            self.start_label["text"] = "Error: Invalid path selection"
+            return 'fail'
+        
+        self.start_label["text"] = " "
         
         self.start_return_dict = self.fullCheck()
         dict_string = ""
@@ -293,23 +312,47 @@ class TGui:
         
         cancel_button = tk.Button(pop_up_window, text="CANCEL", command=pop_up_window.destroy, width=20, height=2)
         cancel_button.grid(column=0, row=3, padx=5, pady=(0, 5))
-        
-        #if return_value != begin boot sequence and start running bot. see if pygui exit command will kill whole script 
-        #NEED TO MODIFY return_value AFTER THIS POINT, TURN ALL "FULL RUN"s INTO -1s
+
         
     def beginRun(self, value_dict):
         #BOOT GAME, WAIT FOR LOAD
-        #while True:
-            #if pygui.locateOnScreen(main_menu.png, confidence=0.9):
-                #break
-            #else:
-                #sleep(5)
-        my_orchestrator = Orchestrator(value_dict)
+        self.my_booter = BootUp(self.path_space["text"], self.root_path)
+        boot_status = self.my_booter.fullRun()
+        if boot_status != "success":
+           self.start_label["text"] = "Error: Tarkov was not able to boot. Closing bot" 
+           return 'fail'
+       
+        self._kill = False
+        
+        self.exit_window = tk.Tk()
+        self.exit_window.geometry("+1250+5")
+        
+        def exitProgram():
+            self.exit_window.destroy()
+            self._kill = True
+            #KILL EFT HERE
+            #will need user to manually set eft installation path (exe not launcher)
+            
+            
+        exit_button = tk.Button(self.exit_window, text="Exit", width=25, height=2, command=exitProgram, borderwidth=2, relief="ridge")
+        exit_button.grid(row=0, column=0, padx=5, pady=2.5)
+        
+        self.exit_window.lift()
+                
+        my_orchestrator = Orchestrator(value_dict, self.root_path)
         my_orchestrator.orchestrator()
+        #May need to call orchestrator within new tkinter main loop, as i dont think it will get to it otherwise
+        #IDEA FOR EXIT KEY. BOOT HAPPENS, LOOKS FOR MAIN MENU. ONCE MAIN MENU FOUND, OPEN TKINTER WINDOW IN BOTTOM RIGHT, HAVE IT ALWAYS STAY ON SCREEN, MAKE EXIT KEY
+        self.exit_window.mainloop()  
+        
+        if self._kill == True:
+            self._kill == False
+            total_time = my_orchestrator.grabTotalTime()
+            self.time_label["text"] = "End of script reached.\nAlloted time: "+str(total_time)+" seconds.\nThank you for choosing TarkBot!"
             
     
-    
-    
+
+my_gui = TGui()    
     
     
     

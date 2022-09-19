@@ -13,6 +13,7 @@ import tkinter as tk
 from tkinter import filedialog as fd
 from time import sleep
 import os
+import psutil
 
 # {"workbench":(workbench_value, workbench_count), "intel":(intel_value, intel_count), "med":(med_value, med_count), 
 #  "lav":(lav_value, lav_count), "nutrition":(nutrition_value, nutrition_count), "scav":(scav_value, scav_count), 
@@ -41,8 +42,6 @@ class TGui:
             #after that is captcha problem
                 #try ocr text -> url strat
             
-        
-        
         #VARIABLE CREATION
         self.time_count = tk.StringVar()
         self.checkup_count = tk.StringVar()
@@ -104,6 +103,7 @@ class TGui:
         self.scav_names = all_recipes["Scav - Names"]
 
         #misc
+        self.process_names = ["EscapeFromTarkov_BE.exe", "EscapeFromTarkov.exe", "BsgLauncher.exe"]
         self.all_nodes = ["generator", "workbench", "intel", "med", "lav", "nutrition", "scav", "water", "booze"]
         self.names_to_full = {"workbench":self.full_workbench_recipes, "nutrition":self.full_nutrition_recipes, "intel":self.full_intel_recipes, "med":self.full_medstation_recipes, "scav":self.scav_names}
 
@@ -340,7 +340,10 @@ class TGui:
         self.exit_window.lift()
                 
         my_orchestrator = Orchestrator(value_dict, self.root_path)
-        my_orchestrator.orchestrator()
+        status = my_orchestrator.orchestrator()
+        if status == "FATAL":
+            print("Exiting program due to fatal error...")
+            exitProgram()
         #May need to call orchestrator within new tkinter main loop, as i dont think it will get to it otherwise
         #IDEA FOR EXIT KEY. BOOT HAPPENS, LOOKS FOR MAIN MENU. ONCE MAIN MENU FOUND, OPEN TKINTER WINDOW IN BOTTOM RIGHT, HAVE IT ALWAYS STAY ON SCREEN, MAKE EXIT KEY
         self.exit_window.mainloop()  
@@ -350,6 +353,18 @@ class TGui:
             total_time = my_orchestrator.grabTotalTime()
             self.time_label["text"] = "End of script reached.\nAlloted time: "+str(total_time)+" seconds.\nThank you for choosing TarkBot!"
             
+            for proc in psutil.process_iter():
+                if proc.name() in self.process_names:
+                    print("Killing " + proc.name() + " instance")
+                    proc.kill()
+                    self.process_names.pop(self.process_names.index(proc.name()))
+            
+            if len(self.process_names) < 1:
+                print("All relevant processes killed")
+                print("End of script reached.\nAlloted time: "+str(total_time)+" seconds.\nThank you for choosing TarkBot!")
+            else:
+                print("End of script reached.\nAlloted time: "+str(total_time)+" seconds.\nThank you for choosing TarkBot!")
+                print("\n\n\nERROR: not all processes killed. Must kill manually before new run")
     
 
 my_gui = TGui()    

@@ -80,6 +80,8 @@ class Orchestrator:
         if status == "fail":
             print("Error: Workbench failure. Aborting attempt...")
             return 'fail'
+        elif status == "FATAL":
+            return "FATAL"
         self.workbench_runs += 1
         # except:
         #     print("Error: Fatal error while running workbench")
@@ -94,6 +96,8 @@ class Orchestrator:
             if status == "fail":
                 print("Error: Intel failure. Aborting attempt...")
                 return 'fail'
+            elif status == "FATAL":
+                return "FATAL"
             self.intel_runs += 1
         except:
             print("Error: Fatal error while running intel")
@@ -108,6 +112,8 @@ class Orchestrator:
             if status == "fail":
                 print("Error: Medstation failure. Aborting attempt...")
                 return 'fail'
+            elif status == "FATAL":
+                return "FATAL"
             self.med_runs += 1
         except:
             print("Error: Fatal error while running medstation")
@@ -122,6 +128,8 @@ class Orchestrator:
             if status == "fail":
                 print("Error: Lavatory failure. Aborting attempt...")
                 return 'fail'
+            elif status == "FATAL":
+                return "FATAL"
             self.lav_runs += 1
         except:
             print("Error: Fatal error while running lavatory")
@@ -136,6 +144,8 @@ class Orchestrator:
             if status == "fail":
                 print("Error: Nutrition failure. Aborting attempt...")
                 return 'fail'
+            elif status == "FATAL":
+                return "FATAL"
             self.nutrition_runs += 1
         except:
             print("Error: Fatal error while running nutrition")
@@ -150,6 +160,8 @@ class Orchestrator:
             if status == "fail":
                 print("Error: Scav Case failure. Aborting attempt...")
                 return 'fail'
+            elif status == "FATAL":
+                return "FATAL"
             self.scav_runs += 1
         except:
             print("Error: Fatal error while running scav case")
@@ -164,6 +176,8 @@ class Orchestrator:
             if status == "fail":
                 print("Error: Water failure. Aborting attempt...")
                 return 'fail'
+            elif status == "FATAL":
+                return "FATAL"
             self.water_runs += 1
         except:
             print("Error: Fatal error while running water")
@@ -178,6 +192,8 @@ class Orchestrator:
             if status == "fail":
                 print("Error: Booze failure. Aborting attempt...")
                 return 'fail'
+            elif status == "FATAL":
+                return "FATAL"
             self.booze_runs += 1
         except:
             print("Error: Fatal error while running booze")
@@ -192,6 +208,8 @@ class Orchestrator:
             if status == "fail":
                 print("Error: Generator failure. Aborting attempt...")
                 return 'fail'
+            elif status == "FATAL":
+                return "FATAL"
             self.generator_runs += 1
         except:
             print("Error: Fatal error while running generator")
@@ -206,6 +224,8 @@ class Orchestrator:
             if status == "fail":
                 print("Error: Air failure. Aborting attempt...")
                 return 'fail'
+            elif status == "FATAL":
+                return "FATAL"
             self.air_runs += 1
         except:
             print("Error: Fatal error while running air")
@@ -217,6 +237,8 @@ class Orchestrator:
         if status == "fail":
             print("Error: BTC failure. Aborting attempt...")
             return 'fail'
+        elif status == "FATAL":
+            return "FATAL"
         self.btc_runs += 1
         # except:
         #     print("Error: Fatal error while running BTC")
@@ -234,25 +256,45 @@ class Orchestrator:
         self.runBtc()        
         for item in end_list:
             if item[0] == "generator":
-                self.runGenerator()
+                status = self.runGenerator()
+                if status == "FATAL":
+                    return "FATAL"
             elif item[0] == "workbench":
                 self.runWorkbench()
+                if status == "FATAL":
+                    return "FATAL"
             elif item[0] == "intel":
                 self.runIntel()
+                if status == "FATAL":
+                    return "FATAL"
             elif item[0] == "med":
                 self.runMed()
+                if status == "FATAL":
+                    return "FATAL"
             elif item[0] == "lav":
                 self.runLav()
+                if status == "FATAL":
+                    return "FATAL"
             elif item[0] == "nutrition":
                 self.runNutrition()
+                if status == "FATAL":
+                    return "FATAL"
             elif item[0] == "scav":
                 self.runScav()
+                if status == "FATAL":
+                    return "FATAL"
             elif item[0] == "water":
-                self.runWater
+                self.runWater()
+                if status == "FATAL":
+                    return "FATAL"
             elif item[0] == "booze":
                 self.runBooze()
+                if status == "FATAL":
+                    return "FATAL"
             elif item[0] == "air":
                 self.runAir()
+                if status == "FATAL":
+                    return "FATAL"
             else:
                 print("Error: Somehow incorrect node name??")
                 return 'fail'
@@ -267,7 +309,9 @@ class Orchestrator:
                 total_time = current_time - self.initial_epoch
                 return total_time
             #At this point, program assumes you are on tarkov fully loaded home page 
-            self.runAll()
+            status = self.runAll()
+            if status == "FATAL":
+                return "FATAL"
             sleep(900 * self.checkupFreq)
     
     def grabTotalTime(self):

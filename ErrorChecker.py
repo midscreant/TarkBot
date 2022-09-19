@@ -22,6 +22,8 @@ class ErrorChecker:
         if status == "fail":
             print("Unsuccessful attempt")
             return "fail"
+        elif status == "FATAL":
+            return "FATAL"
         # except:
         #     print("Fatal error while running " + str(function))
         #     return "fail"
@@ -37,6 +39,8 @@ class ErrorChecker:
                 status = self.tryFunction(function)
             if status == 'fail':
                 continue
+            elif status == "FATAL":
+                return "FATAL"
             else:
                 return
         print("Function still failing after 3 attempts...")

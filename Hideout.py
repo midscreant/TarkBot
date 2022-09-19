@@ -367,7 +367,14 @@ class Hideout:
         sleep(0.25)
         pygui.press('esc')
         sleep(0.25)
-        pygui.press('esc') 
+        pygui.press('esc')
+        sleep(0.5)
+        #CONFIRMATION
+        os.chdir(self.submenu_path)
+        if pygui.locateOnScreen("MainMenu_block.png", confidence=0.9) == None:
+            #MEANS YOU ARE NOT ON MAIN MENU SCREEN
+            print("FATAL ERROR: Not on home screen...")
+            return "FATAL"
         sleep(1)
     
     
@@ -449,7 +456,8 @@ class Hideout:
         #basic testing complete
         #need to test confidence levels
         #error checking is next big step
-        self.returnToMainMenu()
+        if self.returnToMainMenu() == "FATAL":
+            return "FATAL"
         self.goToHideout() 
         # node_located = self.locateNode(node_name) 
         # if node_located == True:   
@@ -515,7 +523,8 @@ class Hideout:
         
         
     def quickOrganizeInv(self):
-        self.returnToMainMenu()
+        if self.returnToMainMenu() == "FATAL":
+            return "FATAL"
         #click bottom character
         pygui.click(x=960, y=1064)
         sleep(0.25)
@@ -528,7 +537,8 @@ class Hideout:
     
     
     def airChecker(self):
-        self.returnToMainMenu()
+        if self.returnToMainMenu() == "FATAL":
+            return "FATAL"
         self.goToHideout() 
         self.locateNode('air') 
         os.chdir(self.submenu_path) 
@@ -561,7 +571,8 @@ class Hideout:
            
       
     def boozeChecker(self):
-        self.returnToMainMenu()
+        if self.returnToMainMenu() == "FATAL":
+            return "FATAL"
         self.goToHideout() 
         #NEEDS STATUS PICS 
         self.locateNode('booze')
@@ -609,7 +620,8 @@ class Hideout:
     
     
     def btcChecker(self):
-        self.returnToMainMenu()
+        if self.returnToMainMenu() == "FATAL":
+            return "FATAL"
         self.goToHideout() 
         #deals with btc not graphics
         self.locateNode('btc')
@@ -625,7 +637,8 @@ class Hideout:
        
 
     def generatorChecker(self):
-        self.returnToMainMenu()
+        if self.returnToMainMenu() == "FATAL":
+            return "FATAL"
         self.goToHideout() 
         #Checks if generator has room for more fuel, adds or buys and adds if needed
         #generator images in submenu, _gene
@@ -666,7 +679,8 @@ class Hideout:
         
     
     def waterChecker(self):
-        self.returnToMainMenu()
+        if self.returnToMainMenu() == "FATAL":
+            return "FATAL"
         self.goToHideout() 
         #all checkers auto load and buy if empty 
         self.locateNode('water')
@@ -702,7 +716,8 @@ class Hideout:
            
            
     def gcardBuyAndAdd(self, count=1):
-        self.returnToMainMenu()
+        if self.returnToMainMenu() == "FATAL":
+            return "FATAL"
         self.goToHideout() 
         #buys a graphics card and adds it to btc farm 
         self.bottomFlea()
@@ -714,7 +729,8 @@ class Hideout:
         
         
     def runScavCase(self, item):
-        self.returnToMainMenu()
+        if self.returnToMainMenu() == "FATAL":
+            return "FATAL"
         self.goToHideout() 
         #item is which scav case item to run
             #MOON, 950, 25, 150, INTEL

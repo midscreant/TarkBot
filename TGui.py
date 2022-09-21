@@ -14,6 +14,8 @@ from tkinter import filedialog as fd
 from time import sleep
 import os
 import psutil
+import ast
+# import hashlib
 
 # {"workbench":(workbench_value, workbench_count), "intel":(intel_value, intel_count), "med":(med_value, med_count), 
 #  "lav":(lav_value, lav_count), "nutrition":(nutrition_value, nutrition_count), "scav":(scav_value, scav_count), 
@@ -27,13 +29,26 @@ class TGui:
     def __init__(self):
         
         self.root_path = os.getcwd()
+        self.presets_path = os.path.join(self.root_path, "Presets")
         
         #INITIAL CREATION
         self.root_window = tk.Tk()
         self.root_window.minsize(800, 675)
         self.root_window.title("TarkBot v1.0")
-
-        self.test_recipes = ["test1", "test2", "test3"]
+        
+        os.chdir(self.presets_path)
+        #all file names without extension
+        self.preset_files = [f for f in os.listdir('.') if os.path.isfile(f)]
+        self.preset_names = []
+        for filename in self.preset_files:
+            if filename.endswith(".txt"):
+                self.preset_names.append(filename[:-4])
+        if len(self.preset_names) == 0:
+            self.preset_names.append("No presets found...")
+        print(self.preset_names)
+            
+        os.chdir(self.root_path)
+        
 
         #MISSING LAVATORY AND AIR - should just cut air who tf is gonna run air remotely
             # next step is advanced error checking and bug testing
@@ -55,7 +70,9 @@ class TGui:
         self.water_count = tk.StringVar()
         self.booze_count = tk.StringVar()
 
-        self.preset_value = tk.StringVar()
+        self.main_preset_value = tk.StringVar()
+        self.sub_preset_value = tk.StringVar()
+        self.path_value = None
         self.workbench_value = tk.StringVar()
         self.intel_value = tk.StringVar()
         self.med_value = tk.StringVar()
@@ -68,7 +85,7 @@ class TGui:
         
         self.var_to_node_name = {}
 
-        self.preset_value.set("Select an Option...")
+        self.main_preset_value.set("Select an Option...")
         self.workbench_value.set("Select an Option...")
         self.intel_value.set("Select an Option...")
         self.med_value.set("Select an Option...")
@@ -116,37 +133,44 @@ class TGui:
         
         self.preset_label = tk.Label(self.root_window, text="Preset", font=("Arial Bold", 8), borderwidth=2, relief="ridge")
         self.preset_label.grid(column=0, row=2, padx=2.5, pady=5)
-        self.preset_menu = tk.OptionMenu(self.root_window, self.preset_value, *self.test_recipes)
+        self.preset_menu = tk.OptionMenu(self.root_window, self.main_preset_value, *self.preset_names)
         self.preset_menu.grid(column=0, row=3, padx=2.5, pady=5)
+        self.preset_set_button = tk.Button(self.root_window, text="Insert", command=self.setPreset)
+        self.preset_set_button.grid(column=0, row=4, padx=2.5, pady=5)
+        self.preset_delete_button = tk.Button(self.root_window, text="Delete", command=self.deletePreset)
+        self.preset_delete_button.grid(column=0, row=5, padx=2.5, pady=5)
+        self.lower_preset_label  = tk.Label(self.root_window)
+        self.lower_preset_label.grid(column=0, row=6, padx=2.5, pady=5)
         
         self.time_label = tk.Label(self.root_window, text="Time (15min x Entry)", font=("Arial Bold", 8), borderwidth=2, relief="ridge")
-        self.time_label.grid(column=0, row=5, padx=2.5, pady=5)
+        self.time_label.grid(column=0, row=8, padx=2.5, pady=5)
         self.time_entry = tk.Entry(self.root_window, textvariable=self.time_count, width=35, highlightthickness=1, highlightbackground="black", highlightcolor="red")
-        self.time_entry.grid(column=0, row=6, padx=2.5, pady=5)
+        self.time_entry.grid(column=0, row=9, padx=2.5, pady=5)
         
         self.checkup_label = tk.Label(self.root_window, text="Checkup Freq (15min x Entry)", font=("Arial Bold", 8), borderwidth=2, relief="ridge")
-        self.checkup_label.grid(column=0, row=8, padx=2.5, pady=5)
+        self.checkup_label.grid(column=0, row=11, padx=2.5, pady=5)
         self.checkup_entry = tk.Entry(self.root_window, textvariable=self.checkup_count, width=35, highlightthickness=1, highlightbackground="black", highlightcolor="red")
-        self.checkup_entry.grid(column=0, row=9, padx=2.5, pady=5)
+        self.checkup_entry.grid(column=0, row=12, padx=2.5, pady=5)
         
         self.path_label = tk.Label(self.root_window, text="Path to BSGLauncher.exe", font=("Arial Bold", 8), borderwidth=2, relief="ridge")
-        self.path_label.grid(column=0, row=10, padx=2.5, pady=5)
+        self.path_label.grid(column=0, row=14, padx=2.5, pady=5)
         self.path_space = tk.Label(self.root_window)
-        self.path_space.grid(column=0, row=11, padx=2.5, pady=5)
+        self.path_space.grid(column=0, row=15, padx=2.5, pady=5)
         def selectFile():
             file_path = fd.askopenfilename(initialdir="/", title="Find bsglauncher.exe", filetypes=(("Executables (.exe)", "*.exe"),))
             self.path_space["text"] = file_path
+            self.path_value = file_path
             #in future, save this to a txt file as saved config
         self.select_button = tk.Button(self.root_window, text="Select file", width=10, command=selectFile)
-        self.select_button.grid(column=0, row=12, padx=2.5, pady=5)
+        self.select_button.grid(column=0, row=16, padx=2.5, pady=5)
         
         self.time_label = tk.Label(self.root_window,font=("Arial Bold", 15))
-        self.time_label.grid(column=0, row=13, rowspan=6)
+        self.time_label.grid(column=0, row=17, rowspan=5)
         
         self.start_label = tk.Label(self.root_window, font=("Arial", 10))
-        self.start_label.grid(column=0, row=19)
+        self.start_label.grid(column=0, row=23)
         self.start_button = tk.Button(self.root_window, text="Start", command=self.startPressed, width=25, height=2, font=("Arial Bold", 12))
-        self.start_button.grid(column=0, row=20, padx=25, pady=(0, 10))
+        self.start_button.grid(column=0, row=24, padx=25, pady=(0, 10))
         
         
         #COLUMN 1
@@ -198,7 +222,7 @@ class TGui:
         
         self.lav_label = tk.Label(self.root_window, text="Lavatory", font=("Arial Bold", 8), borderwidth=2, relief="ridge")
         self.lav_label.grid(column=2, row=11)
-        self.lav_menu = tk.OptionMenu(self.root_window, self.lav_value, *self.test_recipes)
+        self.lav_menu = tk.OptionMenu(self.root_window, self.lav_value, *self.preset_names)
         self.lav_menu.grid(column=2, row=12)
         self.lav_entry = tk.Entry(self.root_window, textvariable=self.lav_count, width=20, highlightthickness=1, highlightbackground="black", highlightcolor="red")
         self.lav_entry.grid(column=2, row=13, padx=2.5, pady=5)
@@ -217,24 +241,191 @@ class TGui:
         self.scav_entry = tk.Entry(self.root_window, textvariable=self.scav_count, width=20, highlightthickness=1, highlightbackground="black", highlightcolor="red")
         self.scav_entry.grid(column=2, row=19, padx=2.5, pady=5)
         
+        self._preset_label = tk.Label(self.root_window, text="Preset Name", font=("Arial Bold", 8))
+        self._preset_label.grid(column=2, row=20, padx=2.5, pady=5)
+        self._preset_label_2 = tk.Label(self.root_window, text="Leave blank to\nuse deafult", font=("Arial", 8))
+        self._preset_label_2.grid(column=2, row=21, padx=2.5, pady=5)
+        self._preset_name_entry = tk.Entry(self.root_window, textvariable=self.sub_preset_value, width=20, highlightthickness=1, highlightbackground="black", highlightcolor="red")
+        self._preset_name_entry.grid(column=2, row=22, padx=2.5, pady=5)
+        self._preset_save_button = tk.Button(self.root_window, text="Save", command=self.savePreset)
+        self._preset_save_button.grid(column=2, row=23, padx=2.5, pady=2.5)
         
         
         self.root_window.mainloop()
         #call mainloop on class instance
         
+    def updateMenu(self, option_menu, new_full_list):
+        #new_full_list should be a list
+        _menu = option_menu["menu"]
+        _menu.delete(0, "end")
+        for string in new_full_list:
+            _menu.add_command(label=string, command=lambda value=string: self.main_preset_value.set(value))
     
+    def savePreset(self):
+        self.var_to_node_name = {"workbench":(self.workbench_value.get(), self.workbench_count.get()), 
+                                 "intel":(self.intel_value.get(), self.intel_count.get()),
+                                 "nutrition":(self.nutrition_value.get(), self.nutrition_count.get()),
+                                 "med":(self.med_value.get(), self.med_count.get()), 
+                                 # "lav":(self.lav_value, self.lav_count),
+                                 "scav":(self.scav_value.get(), self.scav_count.get()), 
+                                 "booze":self.booze_count.get(), 
+                                 "water":self.water_count.get(), 
+                                 "generator":self.generator_count.get(), 
+                                 "runtime":self.time_count.get(), 
+                                 "checkup":self.checkup_count.get(),
+                                 "path":self.path_value}
+        
+        none_count = 0
+        for key, value in list(self.var_to_node_name.items()):
+            if key=="runtime" or key=="checkup" or key=="path":
+                continue
+            if type(value) == tuple:
+                if value[0] == None or value[0] == "Select an Option...":
+                    none_count += 1
+                    continue
+            elif value == None or value.strip() == "":
+                none_count += 1
+        
+        if none_count >= len(self.var_to_node_name.keys()) - 3:
+            self.start_label["text"] = "Error: Preset requires\ntime, checkup, path and at least 1 action"
+            return 'fail'
+                    
+        return_dict = self.fullCheck()
+        os.chdir(self.presets_path)
+        file_list = [f for f in os.listdir('.') if os.path.isfile(f)]
+        file_count = len(file_list)
+        preset_name = self.sub_preset_value.get()
+        if len(preset_name.strip()) > 0:
+            try:
+                file_string = preset_name + ".txt"
+                with open(file_string, "x") as fp:
+                    fp.write(str(return_dict))
+            except:
+                file_string = "Custom Preset " + str(file_count + 1) + ".txt"
+                with open(file_string, "x") as fp:
+                    fp.write(str(return_dict))
+        else:
+            file_string = "Custom Preset " + str(file_count + 1) + ".txt"
+            with open(file_string, "x") as fp:
+                fp.write(str(return_dict))
+                
+        # main_hash = hashlib.md5(file_string.encode())
+        # print(main_hash.hexdigest())
+        # for file in self.preset_files:
+        #     second_hash = hashlib.md5(file.encode())
+        #     print(second_hash.hexdigest())
+        #     if main_hash.hexdigest() == second_hash.hexdigest():
+        #         os.remove(file_string)
+        #         print("Error: This exact preset already exists. Preset " + file)
+        #         self._preset_label_2["text"] = "Error: This exact preset\nalready exists\nPreset " + file
+        #         return 'fail'
+                
+        print("New preset created: " + file_string)
+        self._preset_label_2["text"] = "New preset created: " + file_string[:-4]
+        self.preset_names.append(file_string[:-4])
+        self.updateMenu(self.preset_menu, self.preset_names)
+        self.preset_files.append(file_string)
+
+        os.chdir(self.root_path)
+            
+                
+    
+    def setPreset(self):
+        
+        if self.main_preset_value == "Select an Option...":
+            print("Error: No preset selected")
+            return
+        
+        preset_file = self.preset_menu["text"] + ".txt"
+        print(preset_file)
+        dict_string = ""
+        os.chdir(self.presets_path)
+        with open(preset_file, "r") as fp:
+            for line in fp:
+                dict_string = dict_string + line
+                
+        preset_dict = ast.literal_eval(dict_string.strip())
+        # print(dict_string)
+        
+        #PRESET DICT STRUCTURE
+            #{"name":preset_name, "runtime":count, "checkup":count, "path":path_to_launcher...}
+            
+        nodes_to_set = {}
+        
+        for key, value in list(preset_dict.items()):
+            if type(value) == tuple:
+                if value[0] == None:
+                    continue
+                nodes_to_set[key] = value
+            elif type(value) == str or type(value) == int:
+                nodes_to_set[key] = value
+                    
+        if "workbench" in nodes_to_set.keys():
+            self.workbench_value.set(preset_dict["workbench"][0])
+            self.workbench_count.set(int(preset_dict["workbench"][1]))
+        if "scav" in nodes_to_set.keys():
+            self.scav_value.set(preset_dict["scav"][0])
+            self.scav_count.set(int(preset_dict["scav"][1]))
+        if "intel" in nodes_to_set.keys():
+            self.intel_value.set(preset_dict["intel"][0])
+            self.intel_count.set(int(preset_dict["intel"][1]))
+        if "med" in nodes_to_set.keys():
+            self.med_value.set(preset_dict["med"][0])
+            self.med_count.set(int(preset_dict["med"][1]))
+        if "nutrition" in nodes_to_set.keys():
+            self.nutrition_value.set(preset_dict["nutrition"][0])
+            self.nutrition_count.set(int(preset_dict["nutrition"][1]))
+        if "runtime" in nodes_to_set.keys():
+            self.time_count.set(int(preset_dict["runtime"]))
+        if "checkup" in nodes_to_set.keys():
+            self.checkup_count.set(int(preset_dict["checkup"]))
+        if "path" in nodes_to_set.keys():
+            self.path_space["text"] = preset_dict["path"]
+        if "generator" in nodes_to_set.keys():
+            self.generator_count.set(int(preset_dict["generator"]))
+        if "water" in nodes_to_set.keys():
+            self.water_count.set(int(preset_dict["water"]))
+        if "booze" in nodes_to_set.keys():
+            self.booze_count.set(int(preset_dict["booze"]))
+            
+        # print(nodes_to_set)
+        os.chdir(self.root_path)
+        
+    def deletePreset(self):
+        os.chdir(self.presets_path)
+        file_name = self.preset_menu["text"] + ".txt"
+        if file_name in self.preset_files:
+            try:
+                os.remove(file_name)
+                self.lower_preset_label["text"] = "Preset deleted: " + file_name[:-4]
+            except:
+                self.lower_preset_label["text"] = "Error while trying to delete preset"
+        os.chdir(self.root_path)
+                
+                
+            
+        
+        
     def countCheck(self, value):
-       value_inside = value.get()
-       try:
+        value_inside = None
+        if type(value) != str and type(value) != int:
+           value_inside = value.get()
+        else:
+           value_inside = value
+        if "BsgLauncher" in value_inside:
+            return value_inside
+        try:
            count = int(value_inside.strip())
            if count <= -1:
                count = -1
            return count
-       except:
+        except:
            return None
        
     def nameCheck(self, value):
-        value_inside = value.get()
+        value_inside = value
+        if type(value_inside) != str:
+            value_inside = value.get()
         if str(value_inside) != "Select an Option...":
             return str(value_inside)
         else:
@@ -256,31 +447,30 @@ class TGui:
         return return_dict
        
     def startPressed(self):
-
-        self.var_to_node_name = {"workbench":(self.workbench_value, self.workbench_count), 
-                                     "intel":(self.intel_value, self.intel_count),
-                                     "nutrition":(self.nutrition_value, self.nutrition_count),
-                                     "med":(self.med_value, self.med_count), 
-                                     "lav":(self.lav_value, self.lav_count),
-                                     "scav":(self.scav_value, self.scav_count), 
-                                     "booze":self.booze_count, 
-                                     "water":self.water_count, 
-                                     "generator":self.generator_count, 
-                                     #"air":self.air_count,
-                                     "runtime":self.time_count, 
-                                     "checkup":self.checkup_count } 
+        self.var_to_node_name = {"workbench":(self.workbench_value.get(), self.workbench_count.get()), 
+                                     "intel":(self.intel_value.get(), self.intel_count.get()),
+                                     "nutrition":(self.nutrition_value.get(), self.nutrition_count.get()),
+                                     "med":(self.med_value.get(), self.med_count.get()), 
+                                     # "lav":(self.lav_value.get(), self.lav_count.get()),
+                                     "scav":(self.scav_value.get(), self.scav_count.get()), 
+                                     "booze":self.booze_count.get(), 
+                                     "water":self.water_count.get(), 
+                                     "generator":self.generator_count.get(), 
+                                     "runtime":self.time_count.get(), 
+                                     "checkup":self.checkup_count.get()} 
         
         if self.countCheck(self.time_count) == None or self.countCheck(self.checkup_count) == None:
             self.start_label["text"] = "Error: Time or checkup entry invalid. Must be int"
-            return 'fail'
+            # return 'fail'
         
         if self.path_space["text"].lower().endswith("bsglauncher.exe") != True:
             self.start_label["text"] = "Error: Invalid path selection"
-            return 'fail'
+            # return 'fail'
         
         self.start_label["text"] = " "
         
         self.start_return_dict = self.fullCheck()
+        
         dict_string = ""
         for name, value in list(self.start_return_dict.items()):
             if name == "runtime" or name == "checkup":

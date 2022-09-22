@@ -514,34 +514,34 @@ class TGui:
        
         self._kill = False
         
-        self.exit_window = tk.Tk()
-        self.exit_window.geometry("+1250+5")
+        # self.exit_window = tk.Tk()
+        # self.exit_window.geometry("+1250+5")
         
-        def exitProgram():
-            self.exit_window.destroy()
-            self._kill = True
-            #KILL EFT HERE
-            #will need user to manually set eft installation path (exe not launcher)
+        # def exitProgram():
+        #     self.exit_window.destroy()
+        #     self._kill = True
+        #     #KILL EFT HERE
+        #     #will need user to manually set eft installation path (exe not launcher)
             
             
-        exit_button = tk.Button(self.exit_window, text="Exit", width=25, height=2, command=exitProgram, borderwidth=2, relief="ridge")
-        exit_button.grid(row=0, column=0, padx=5, pady=2.5)
+        # exit_button = tk.Button(self.exit_window, text="Exit", width=25, height=2, command=exitProgram, borderwidth=2, relief="ridge")
+        # exit_button.grid(row=0, column=0, padx=5, pady=2.5)
         
-        self.exit_window.lift()
+        # self.exit_window.lift()
                 
         my_orchestrator = Orchestrator(value_dict, self.root_path)
         status = my_orchestrator.orchestrator()
         if status == "FATAL":
             print("Exiting program due to fatal error...")
-            exitProgram()
+            self._kill = True
         #May need to call orchestrator within new tkinter main loop, as i dont think it will get to it otherwise
         #IDEA FOR EXIT KEY. BOOT HAPPENS, LOOKS FOR MAIN MENU. ONCE MAIN MENU FOUND, OPEN TKINTER WINDOW IN BOTTOM RIGHT, HAVE IT ALWAYS STAY ON SCREEN, MAKE EXIT KEY
-        self.exit_window.mainloop()  
+        # self.exit_window.mainloop()  
         
         if self._kill == True:
             self._kill == False
             total_time = my_orchestrator.grabTotalTime()
-            self.time_label["text"] = "End of script reached.\nAlloted time: "+str(total_time)+" seconds.\nThank you for choosing TarkBot!"
+            self.time_label["text"] = "End of script reached.\nAlloted time: "+str(round(total_time, 2))+" seconds.\nThank you for choosing TarkBot!"
             
             for proc in psutil.process_iter():
                 if proc.name() in self.process_names:
@@ -551,9 +551,9 @@ class TGui:
             
             if len(self.process_names) < 1:
                 print("All relevant processes killed")
-                print("End of script reached.\nAlloted time: "+str(total_time)+" seconds.\nThank you for choosing TarkBot!")
+                print("End of script reached.\nAlloted time: "+str(round(total_time, 2))+" seconds.\nThank you for choosing TarkBot!")
             else:
-                print("End of script reached.\nAlloted time: "+str(total_time)+" seconds.\nThank you for choosing TarkBot!")
+                print("End of script reached.\nAlloted time: "+str(round(total_time, 2))+" seconds.\nThank you for choosing TarkBot!")
                 print("\n\n\nERROR: not all processes killed. Must kill manually before new run")
     
 

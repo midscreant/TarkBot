@@ -1,0 +1,1 @@
+{'workbench': (None, None), 'intel': (None, None), 'nutrition': (None, None), 'med': (None, None), 'scav': (None, None), 'booze': 1, 'water': 1, 'generator': 1, 'runtime': 1, 'checkup': 1, 'path': 'C:/Battlestate Games/BsgLauncher/BsgLauncher.exe'}

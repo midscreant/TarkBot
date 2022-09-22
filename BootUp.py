@@ -41,11 +41,11 @@ class BootUp:
             if pygui.locateOnScreen("mainmenu_block.png", confidence=0.9):
                 print("Main menu found")
                 return
-            if i == 60:
+            if i == 45:
                 pygui.click(x=960, y=540)
                 continue
-            if i > 120:
-                print("No buttons found after two minutes.")
+            if i > 90:
+                print("No buttons found after 90 sec")
                 return "fail"
             i += 1    
             sleep(1)    

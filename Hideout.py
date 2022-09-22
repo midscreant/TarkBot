@@ -118,19 +118,27 @@ class Hideout:
     #Passive Hideout Functions
     #<><><><><><><><><><><><><>
     
-    def checkForClaim(self):
+    def checkForClaim(self, node_name):
         os.chdir(self.submenu_path)
         #extension is _claim
         dir_list = [f for f in os.listdir('.') if os.path.isfile(f) and '_claim' in f]
         for claim in dir_list:
-            if pygui.locateCenterOnScreen(claim, confidence=0.9) != None:
-                point_x, point_y = pygui.locateCenterOnScreen(claim ,confidence=0.9)
+            if pygui.locateCenterOnScreen(claim, confidence=0.75) != None:
+                if node_name != "scav":
+                    point_x, point_y = pygui.locateCenterOnScreen(claim,confidence=0.75)
+                    pygui.click(x=point_x, y=point_y)
+                    print("Item claimed")
+                    return
+                point_x, point_y = pygui.locateCenterOnScreen(claim,confidence=0.75)
                 pygui.click(x=point_x, y=point_y)
                 print("Item claimed")
-                return 
+                sleep(1)
+                _point_x, _point_y = pygui.loacteCenterOnScreen("receive_claim.png", confidence=0.75)
+                pygui.click(x=_point_x, y=_point_y)
+                print("And received")
+                return
             else:
-                print("Nothing to claim on this node")
-                break
+                continue
         return 'none'
     
     def getAllItems(self):
@@ -145,7 +153,7 @@ class Hideout:
         _clicked = False
         for node in dir_list:
             if pygui.locateOnScreen(node, confidence=0.9) != None:
-                point_x, point_y = pygui.locateCenterOnScreen(node, confidence=0.9)
+                point_x, point_y = pygui.locateCenterOnScreen(node, confidence=0.8)
                 pygui.click(x=point_x, y=point_y)
                 sleep(0.5)
                 _clicked = True
@@ -157,10 +165,12 @@ class Hideout:
         scroll_nodes = ["medstation", "lavatory", "scav", "intel", "workbench", "nutrition"]
                     
         claimed_count = 0
-        for i in range(19):
+        os.chdir(self.submenu_path)
+        for i in range(20):
+            complete = False
             for node in scroll_nodes:
                 node_name = node + "_name.png"
-                if pygui.locateOnScreen(node_name, confidence=0.9) != None:
+                if pygui.locateOnScreen(node_name, confidence=0.75) != None:
                     _exit_count = 0
                     if node == "medstation":
                         _exit_count = 50
@@ -175,23 +185,29 @@ class Hideout:
                     elif node == "nutrition":
                         _exit_count = 42
                     _i = 0
-                    while True:
-                        if _i >= _exit_count:
-                            break
-                        pygui.moveTo(x=1410, y=655)
-                        pygui.scroll(-4000)
-                        _i += 1
-                        print('scrolled')
-                        if i%8 == 0:
-                            status = self.checkForClaim()
+                    if _exit_count > 0:
+                        while True:
+                            if _i >= _exit_count:
+                                complete = True
+                                break
+                            pygui.moveTo(x=1410, y=655)
+                            pygui.scroll(-4000)
+                            _i += 1
+                            status = self.checkForClaim(node)
                             if status == None:
+                                print("Claimed 2")
                                 claimed_count += 1
                                 print('Done Scrolling')
+                                complete = True
                                 break
-                    break
-
+            if complete == False:
+                    status = self.checkForClaim("na")
+                    if status == None:
+                        print("Claimed")
+                        claimed_count += 1
+            sleep(0.5)
             pygui.click(x=1870, y=999)
-            sleep(1)
+            sleep(0.5)
             
         print("Successfully grabbed " + str(claimed_count) + " item(s)")
         
@@ -431,8 +447,8 @@ class Hideout:
         #node names - "med", "nutrition", "workbench", "intel"
             #right left node list
         right_nodes = ["heating", "library", "rest", "med", "air", "nutrition", "booze", "water"]
-        left_nodes = ["workbench", "intel", "lav", "btc"]
-        middle_nodes = ["generator", "scav"]
+        left_nodes = ["workbench", "intel", "lav"]
+        middle_nodes = ["generator", "scav", "btc"]
         os.chdir(self.nodes_path)
         file_list = [f for f in os.listdir('.') if os.path.isfile(f) and node_name in f.lower()]
         if node_name in right_nodes:
@@ -453,6 +469,9 @@ class Hideout:
     
     
     def goToMainMenu(self):
+        sleep(1)
+        pygui.click(x=0, y=500)
+        sleep(0.25)
         pygui.press('esc')
         sleep(0.25)
         pygui.press('esc')
@@ -469,6 +488,7 @@ class Hideout:
             #MEANS YOU ARE NOT ON MAIN MENU SCREEN
             print("FATAL ERROR: Not on home screen...")
             return "FATAL"
+        print("On main menu")
         sleep(1)
     
     
@@ -671,7 +691,7 @@ class Hideout:
         #NEEDS STATUS PICS 
         self.locateNode('booze')
         os.chdir(self.submenu_path) 
-        if pygui.locateOnScreen("BoozeProducingStatus.png", confidence=0.9) != None:
+        if pygui.locateOnScreen("production_status.png", confidence=0.9) != None:
             print("Booze currently being produced...")
             pygui.press("esc")
             return
@@ -739,6 +759,7 @@ class Hideout:
         self.locateNode('generator')
         os.chdir(self.submenu_path) 
         #listing loader imgs
+        self.clickMidLeft()
         if pygui.locateOnScreen("BigFuelLoader_gene.png", confidence=0.9) != None:
             fuel_loc_x, fuel_loc_y = pygui.locateCenterOnScreen("BigFuelFull_gene.png")
             pygui.click(x=fuel_loc_x, y=fuel_loc_y)

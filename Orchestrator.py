@@ -36,7 +36,7 @@ class Orchestrator:
         self.workbench_tuple = ("workbench",preset_dict["workbench"])
         self.intel_tuple = ("intel", preset_dict["intel"])
         self.med_tuple = ("med", preset_dict["med"])
-        self.lav_tuple = ("lav", preset_dict["lav"])
+        # self.lav_tuple = ("lav", preset_dict["lav"])
         self.nutrition_tuple = ("nutrition", preset_dict["nutrition"])
         #scav names are MOON, 950, 25, 150, INTEL
         self.scav_tuple = ("scav", preset_dict["scav"]) 
@@ -46,7 +46,7 @@ class Orchestrator:
         self.generator_count = ("generator",preset_dict["generator"])
         # self.air_count = ("air",preset_dict["air"])
         
-        [self.workbench_tuple, self.intel_tuple, self.med_tuple, self.lav_tuple, self.nutrition_tuple, self.scav_tuple, self.water_count, self.booze_count, self.generator_count]
+        [self.workbench_tuple, self.intel_tuple, self.med_tuple, self.nutrition_tuple, self.scav_tuple, self.water_count, self.booze_count, self.generator_count]
         
         #if runtime is not set, run count MUST be established for each item. no infinite unless runtime set to that
         #runtime should be in seconds
@@ -57,7 +57,7 @@ class Orchestrator:
         self.workbench_runs = 0
         self.intel_runs = 0
         self.med_runs = 0
-        self.lav_runs = 0
+        # self.lav_runs = 0
         self.nutrition_runs = 0
         self.scav_runs = 0
         self.booze_runs = 0
@@ -119,21 +119,21 @@ class Orchestrator:
             print("Error: Fatal error while running medstation")
             return 'fail'
     
-    def runLav(self):
-        if self.lav_runs == self.lav_tuple[1][1]:
-            print("Lavatory run count already reached...")
-            return
-        try:
-            status = self.my_checker.errorChecker(self.my_hideout.makeRecipe, self.lav_tuple[1][0]) 
-            if status == "fail":
-                print("Error: Lavatory failure. Aborting attempt...")
-                return 'fail'
-            elif status == "FATAL":
-                return "FATAL"
-            self.lav_runs += 1
-        except:
-            print("Error: Fatal error while running lavatory")
-            return 'fail'
+    # def runLav(self):
+    #     if self.lav_runs == self.lav_tuple[1][1]:
+    #         print("Lavatory run count already reached...")
+    #         return
+    #     try:
+    #         status = self.my_checker.errorChecker(self.my_hideout.makeRecipe, self.lav_tuple[1][0]) 
+    #         if status == "fail":
+    #             print("Error: Lavatory failure. Aborting attempt...")
+    #             return 'fail'
+    #         elif status == "FATAL":
+    #             return "FATAL"
+    #         self.lav_runs += 1
+    #     except:
+    #         print("Error: Fatal error while running lavatory")
+    #         return 'fail'
         
     def runNutrition(self):
         if self.nutrition_runs == self.nutrition_tuple[1][1]:
@@ -245,7 +245,7 @@ class Orchestrator:
         #     return 'fail'
         
     def runAll(self):
-        run_list = [self.workbench_tuple, self.intel_tuple, self.med_tuple, self.lav_tuple, self.nutrition_tuple, self.scav_tuple, self.water_count, self.booze_count, self.generator_count]
+        run_list = [self.workbench_tuple, self.intel_tuple, self.med_tuple, self.nutrition_tuple, self.scav_tuple, self.water_count, self.booze_count, self.generator_count]
         end_list = []
         for item in run_list: 
             if type(item[1]) == tuple:
@@ -260,39 +260,39 @@ class Orchestrator:
                 if status == "FATAL":
                     return "FATAL"
             elif item[0] == "workbench":
-                self.runWorkbench()
+                status = self.runWorkbench()
                 if status == "FATAL":
                     return "FATAL"
             elif item[0] == "intel":
-                self.runIntel()
+                status = self.runIntel()
                 if status == "FATAL":
                     return "FATAL"
             elif item[0] == "med":
-                self.runMed()
+                status = self.runMed()
                 if status == "FATAL":
                     return "FATAL"
-            elif item[0] == "lav":
-                self.runLav()
+            # elif item[0] == "lav":
+            #     self.runLav()
                 if status == "FATAL":
                     return "FATAL"
             elif item[0] == "nutrition":
-                self.runNutrition()
+                status = self.runNutrition()
                 if status == "FATAL":
                     return "FATAL"
             elif item[0] == "scav":
-                self.runScav()
+                status = self.runScav()
                 if status == "FATAL":
                     return "FATAL"
             elif item[0] == "water":
-                self.runWater()
+                status = self.runWater()
                 if status == "FATAL":
                     return "FATAL"
             elif item[0] == "booze":
-                self.runBooze()
+                status = self.runBooze()
                 if status == "FATAL":
                     return "FATAL"
             elif item[0] == "air":
-                self.runAir()
+                status = self.runAir()
                 if status == "FATAL":
                     return "FATAL"
             else:
@@ -315,6 +315,7 @@ class Orchestrator:
             status = self.runAll()
             if status == "FATAL":
                 return "FATAL"
+            print("Run complete successfully")
             sleep(900 * self.checkupFreq)
     
     def grabTotalTime(self):

@@ -309,6 +309,9 @@ class Orchestrator:
                 total_time = current_time - self.initial_epoch
                 return total_time
             #At this point, program assumes you are on tarkov fully loaded home page 
+            status = self.my_hideout.getAllItems()
+            if status == "FATAL":
+                return "FATAL"
             status = self.runAll()
             if status == "FATAL":
                 return "FATAL"

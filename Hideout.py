@@ -1,5 +1,12 @@
 # -*- coding: utf-8 -*-
 """
+Created on Wed Sep 21 16:58:08 2022
+
+@author: vinch
+"""
+
+# -*- coding: utf-8 -*-
+"""
 Created on Fri Aug 26 13:22:17 2022
 
 @author: vinch
@@ -105,11 +112,98 @@ class Hideout:
         sleep(0.5)
         pygui.moveTo(x=960,y=540) 
         sleep(1)
+        
+        
+    #<><><><><><><><><><><><><>    
+    #Passive Hideout Functions
+    #<><><><><><><><><><><><><>
+    
+    def checkForClaim(self):
+        os.chdir(self.submenu_path)
+        #extension is _claim
+        dir_list = [f for f in os.listdir('.') if os.path.isfile(f) and '_claim' in f]
+        for claim in dir_list:
+            if pygui.locateCenterOnScreen(claim, confidence=0.9) != None:
+                point_x, point_y = pygui.locateCenterOnScreen(claim ,confidence=0.9)
+                pygui.click(x=point_x, y=point_y)
+                print("Item claimed")
+                return 
+            else:
+                print("Nothing to claim on this node")
+                break
+        return 'none'
+    
+    def getAllItems(self):
+        #need to somehow stop if hideout doesnt have all nodes
+        if self.goToMainMenu() == "FATAL":
+            return "FATAL"
+        
+        self.goToHideout()
+        
+        os.chdir(self.nodes_path)
+        dir_list = [f for f in os.listdir('.') if os.path.isfile(f) and '_node' in f]
+        _clicked = False
+        for node in dir_list:
+            if pygui.locateOnScreen(node, confidence=0.9) != None:
+                point_x, point_y = pygui.locateCenterOnScreen(node, confidence=0.9)
+                pygui.click(x=point_x, y=point_y)
+                sleep(0.5)
+                _clicked = True
+                break
+        if _clicked == False:
+            print("Error. No node found")
+            return "fail"
+        
+        scroll_nodes = ["medstation", "lavatory", "scav", "intel", "workbench", "nutrition"]
+                    
+        claimed_count = 0
+        for i in range(19):
+            for node in scroll_nodes:
+                node_name = node + "_name.png"
+                if pygui.locateOnScreen(node_name, confidence=0.9) != None:
+                    _exit_count = 0
+                    if node == "medstation":
+                        _exit_count = 50
+                    elif node == "lavatory":
+                        continue
+                    elif node == "scav":
+                        _exit_count = 15
+                    elif node == "intel":
+                        _exit_count = 35
+                    elif node == "workbench":
+                        _exit_count = 150
+                    elif node == "nutrition":
+                        _exit_count = 42
+                    _i = 0
+                    while True:
+                        if _i >= _exit_count:
+                            break
+                        pygui.moveTo(x=1410, y=655)
+                        pygui.scroll(-4000)
+                        _i += 1
+                        print('scrolled')
+                        if i%8 == 0:
+                            status = self.checkForClaim()
+                            if status == None:
+                                claimed_count += 1
+                                print('Done Scrolling')
+                                break
+                    break
+
+            pygui.click(x=1870, y=999)
+            sleep(1)
+            
+        print("Successfully grabbed " + str(claimed_count) + " item(s)")
+        
+        
+        
+        
+    
  
     #<><><><><><><><><><><><><>
     #Active Hideout Functions
     #<><><><><><><><><><><><><>
- 
+
     def bottomFlea(self):
         pygui.click(x=1228, y=1066)
         sleep(1)
@@ -358,7 +452,7 @@ class Hideout:
         return "fail"
     
     
-    def returnToMainMenu(self):
+    def goToMainMenu(self):
         pygui.press('esc')
         sleep(0.25)
         pygui.press('esc')
@@ -456,7 +550,7 @@ class Hideout:
         #basic testing complete
         #need to test confidence levels
         #error checking is next big step
-        if self.returnToMainMenu() == "FATAL":
+        if self.goToMainMenu() == "FATAL":
             return "FATAL"
         self.goToHideout() 
         # node_located = self.locateNode(node_name) 
@@ -523,7 +617,7 @@ class Hideout:
         
         
     def quickOrganizeInv(self):
-        if self.returnToMainMenu() == "FATAL":
+        if self.goToMainMenu() == "FATAL":
             return "FATAL"
         #click bottom character
         pygui.click(x=960, y=1064)
@@ -537,7 +631,7 @@ class Hideout:
     
     
     def airChecker(self):
-        if self.returnToMainMenu() == "FATAL":
+        if self.goToMainMenu() == "FATAL":
             return "FATAL"
         self.goToHideout() 
         self.locateNode('air') 
@@ -571,7 +665,7 @@ class Hideout:
            
       
     def boozeChecker(self):
-        if self.returnToMainMenu() == "FATAL":
+        if self.goToMainMenu() == "FATAL":
             return "FATAL"
         self.goToHideout() 
         #NEEDS STATUS PICS 
@@ -620,7 +714,7 @@ class Hideout:
     
     
     def btcChecker(self):
-        if self.returnToMainMenu() == "FATAL":
+        if self.goToMainMenu() == "FATAL":
             return "FATAL"
         self.goToHideout() 
         #deals with btc not graphics
@@ -637,7 +731,7 @@ class Hideout:
        
 
     def generatorChecker(self):
-        if self.returnToMainMenu() == "FATAL":
+        if self.goToMainMenu() == "FATAL":
             return "FATAL"
         self.goToHideout() 
         #Checks if generator has room for more fuel, adds or buys and adds if needed
@@ -679,7 +773,7 @@ class Hideout:
         
     
     def waterChecker(self):
-        if self.returnToMainMenu() == "FATAL":
+        if self.goToMainMenu() == "FATAL":
             return "FATAL"
         self.goToHideout() 
         #all checkers auto load and buy if empty 
@@ -697,7 +791,7 @@ class Hideout:
             self.bottomFlea()
             self.fleaMarketSearch("Water Filter")
             #buys with an offset of 3 to try and prevent low count filters
-            self.buyOnFlea(1, "Water Filter", 3) 
+            self.buyOnFlea(1, "Water Filter", 8) 
             self.locateNode('water')
             self.clickMidLeft() 
             if pygui.locateOnScreen("WaterLoader_gene.png", confidence=0.9) == None:
@@ -716,7 +810,7 @@ class Hideout:
            
            
     def gcardBuyAndAdd(self, count=1):
-        if self.returnToMainMenu() == "FATAL":
+        if self.goToMainMenu() == "FATAL":
             return "FATAL"
         self.goToHideout() 
         #buys a graphics card and adds it to btc farm 
@@ -729,7 +823,7 @@ class Hideout:
         
         
     def runScavCase(self, item):
-        if self.returnToMainMenu() == "FATAL":
+        if self.goToMainMenu() == "FATAL":
             return "FATAL"
         self.goToHideout() 
         #item is which scav case item to run

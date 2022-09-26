@@ -143,6 +143,57 @@ medstation_3_recipes = {"Vaseline balm":{"Soap":3, "Schaman Shampoo":2, "Pile of
                         "LEDX Skin Transilluminator":{"Toolset":1, "Ophthalmoscope":2, "Magnet":3, "UHF RFID Reader":3, "Portable Powerbank":3, "Portable Defibrillator":2} } 
  
 #<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+#lavatory
+
+lavatory_1_recipes = {"Gas mask air filter":{"Screwdriver":1, "GP-7 Gas Mask":1},
+                      "Army Bandage":{"Bottle of tarkovskaya vodka":1, "Aseptic bandages":5},
+                      "Toilet Paper":{"Printer Paper":1},
+                      "Aseptic Bandages":{"Fleece fabric":1},
+                      "Aramid Fiber Fabric":{"Leatherman Multitool":1, "PACA Soft Armor":1},
+                      "Cordura Polyamide Fabric":{"Sewing Kit":1, "Security Vest":3},
+                      "Ripstop Fabric":{"Sewing Kit":1, "Scav Vest":3},
+                      "Cordura Polyamide Fabric-_-":{"Sewing Kit":1, "Tactical Sling Bag":4},
+                      "Aluminum Splint":{"Metal Cutting Scissors":1, "MF-UNTAR Body Armor":1},
+                      "Scav Backpack":{"Fleece Fabric":1, "Bottle of Water (0.6L)":1, "Flyye MBSS Backpack":1},
+                      "LShZ Light Helmet":{"Sewing Kit":1, "Tac-Kek FAST MT Helmet (replica)":1, "Duct Tape":1, "Aramid Fiber Fabric":1},
+                      "BNTI Kirasa-N Body Armor":{"Awl":1, "Sewing Kit":1, "Aramid Fiber Fabric":2, "Ripstop Fabric":2, "PACA Soft Armor":1},
+                      "Soap":{"Alkaline cleaner for heat exchangers":1, "Can of white salt":1, "Can of beef stew (Large)":2}}
+
+lavatory_2_recipes = {"Schaman shampoo":{"Bottle of \"Pevko Light\" Beer":1, "Soap":1},
+                      "Ox Bleach":{"Soap":1, "Alkaline cleaner for heat exchangers":1, "Pack of sodium bicarbonate":1},
+                      "Clin window cleaner":{"Silicone Tube":1, "Bottle of Tarkovskaya Vodka":1, "Schaman Shampoo":1},
+                      "Splav Tarzan M22 chest rig":{"Sewing Kit":1, "Awl":1, "Cordura Polyamide Fabric":1, "Ripstop Fabric":1},
+                      "BNTI Module-3M body armor":{"Ripstop Fabric":2, "Aramid Fiber Fabric":2},
+                      "Fleece Fabric":{"Sewing Kit":1, "UX PRO Beanie":4},
+                      "BlackRock chest rig":{"Sewing Kit":1, "Splav Tarzan M22 chest rig":1, "Ripstop Fabric":1, "Cordura Polyamide Fabric":1},
+                      "Expeditionary fuel tank":{"Silicone Tube":1, "Zibbo Lighter":10, "Crickent Lighter":10},
+                      "KEKTAPE Duct Tape":{"Crickent Lighter":1, "Duct Tape":2, "Insulating Tape":2, "Clin Window Cleaner":1},
+                      "AK-74 5.45x39 6L31 60-round magazine":{"Flat Screwdriver (Long)":1, "AK-74 5.45x39 6L23 30-round magazine":4, "KEKTAPE Duct Tape":1},
+                      "WD-40 (100ml)":{"Metal Cutting Scissors":1, "WD-40 (400ml)":1},
+                      "Pilgrim tourist backpack":{"Sewing Kit":1, "Cordura Polyamide Fabric":2, "Construction Measuring Tape":1, "LolKek 3F Transfer tourist backpack":2},
+                      "Corrugated Hose":{"Silicone Tube":1, "Bundle of Wires":3, "Insulating Tape":3},
+                      "Paracord":{"Crickent Lighter":1, "Duffle Bag":5, "Bars A-2607 95H18 Knife":1, "Bundle of Wires":3},
+                      "Magazine Case":{"Metal Cutting Scissors":1, "Expeditionary Fuel Tank":2, "Bolts":4, "Screw Nuts":4},
+                      "Water Filter":{"Metal Cutting Scissors":1, "Gas mask air filter":4, "Printer Paper":1},
+                      "Lucky Scav Junk Box":{"Metal Cutting Scissors":1, "Magazine Case":3, "Bolts":6, "KEKTAPE Duct Tape":3, "Metal Spare Parts":5},
+                      "Grenade Case":{"Metal Cutting Scissors":1, "Metal Fuel Tank":2, "Screw Nuts":5, "Bolts":5, "Metal Spare Parts":2},
+                      "6B5-15 Zh-86 Uley armored rig":{"Sewing Kit":1, "Awl":1, "6B13 assault armor":1, "Umka M33-SET1 hunter vest":1},
+                      "6B5-15 Zh-86 Uley armored rig-_-":{"Sewing Kit":1, "Awl":1, "6B2 Body Armor (Flora)":1, "BlackHawk! Commando Chest Harness":1, "Aramid Fiber Fabric":1} }
+
+lavatory_3_recipes = {"Velocity Systems MPPV Multi-Purpose Patrol Vest":{"Sewing Kit":1, "Dynaforce Triton M43-A chest harness":1, "KEKTAPE Duct Tape":2},
+                      "6Sh118 raid backpack":{"Leatherman Multitool":1, "Sewing Kit":1, "VKBO Army Bag":4, "Paracord":1, "Ripstop Fabric":5},
+                      "FP-100 Filter Absorber":{"Toolset":1, "Nippers":1, "Gas mask air filter":2, "Water Filter":2, "Metal Spare Parts":2},
+                      "ANA Tactical M1 armored rig":{"Sewing Kit":1, "Awl":1, "ANA Tactical Alpha Chest Rig":1, "6B23-1 body armor (Digital Flora)":2, "Aramid Fiber Fabric":1},
+                      "WARTECH TV-110 plate carrier rig":{"Sewing Kit":1, "Awl":1, "Ripstop Fabric":1, "WARTECH TV-109 + TV-106 chest rig":2, "NPP KlASS Korund-VM body armor":1},
+                      "Body armor repair kit":{"Awl":1, "Sewing Kit":1, "Metal Cutting Scissors":1, "Aramid Fiber Fabric":10, "KEKTAPE Duct Tape":4, "Duct Tape":6, "FORT Defender-2 body armor":3, "BNTI Gzhel-K body armor":3} }
+
+
+
+
+
+
+
+
 #other
 #things like sugar, water bottles etc. also would fall under this, but for construction purposes, charge doesn't matter
 partial_items = ["Water Filter", "FP-100 Filter Absorber", "Metal Fuel Tank", "Expeditionary fuel tank"]
@@ -260,11 +311,52 @@ new_medstation_names = {"AI-2 medkit":"AI2",
                           "Pile of meds":"MEDS",
                           "SJ1 TGLabs combat stimulant injector":"SJ1"}
 
+new_lavatory_names = {"Ox Bleach":"BLEACH",
+                      "Schaman shampoo":"SHAMPOO",
+                      "Expeditionary fuel tank":"SMALLFUEL",
+                      "Toilet Paper":"TP",
+                      "FP-100 Filter Absorber":"FP100",
+                      "Magazine Case":"MAGCASE",
+                      "Corrugated Hose":"HOSE",
+                      "Clin window cleaner":"WINDOW",
+                      "Gas mask air filter":"MASKFILTER",
+                      "AK-74 5.45x39 6L31 60-round magazine":"6L31",
+                      "Aseptic Bandages":"ASEPTIC",
+                      "Scav Backpack":"SCAVBP",
+                      "BNTI Module-3M body armor":"3M",
+                      "WD-40 (100ml)":"WD40",
+                      "Splav Tarzan M22 chest rig":"TARZAN",
+                      "Army Bandage":"ARMY",
+                      "Lucky Scav Junk Box":"SCAVBOX",
+                      "Ripstop Fabric":"RIPSTOP",
+                      "Aramid Fiber Fabric":"ARAMID",
+                      "Cordura Polyamide Fabric":"CORDURA",
+                      "BNTI Kirasa-N Body Armor":"KIRASA",
+                      "Grenade Case":"GRENADE",
+                      "Fleece Fabric":"FLEECE",
+                      "Aluminum Splint":"SPLINT",
+                      "Cordura Polyamide Fabric-_-":"CORDURA2", #(sling bag)
+                      "BlackRock chest rig":"BLACKROCK",
+                      "Water Filter":"WATER",
+                      "6Sh118 raid backpack":"RAID",
+                      "Paracord":"PARA",
+                      "LShZ Light Helmet":"LSHZ",
+                      "Velocity Systems MPPV Multi-Purpose Patrol Vest":"MPPV",
+                      "Body armor repair kit":"ARMOR",
+                      "Soap":"SOAP",
+                      "Pilgrim tourist backpack":"PILGRIM",
+                      "KEKTAPE Duct Tape":"KEK",
+                      "6B5-15 Zh-86 Uley armored rig":"ZH86",
+                      "6B5-15 Zh-86 Uley armored rig-_-":"ZH862", #tan
+                      "ANA Tactical M1 armored rig":"ANAM1",
+                      "WARTECH TV-110 plate carrier rig":"TV110" }
+
 new_scav_names = { "MOON":"\"Fierce Hatchling\" Moonshine" ,
                   "INTEL":"Intelligence Folder" ,
                   "950":"95000 Rubles" ,
                   "150":"15000 Rubles" ,
                   "25":"2500 Rubles" }
+
  
 
 #<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
@@ -274,11 +366,13 @@ all_recipes = {"Workbench":[workbench_1_recipes, workbench_2_recipes, workbench_
                "Nutrition":[nutrition_1_recipes, nutrition_2_recipes, nutrition_3_recipes],
                "Intel":[intel_2_recipes, intel_3_recipes],
                "Medstation":[medstation_1_recipes, medstation_2_recipes, medstation_3_recipes],
+               "Lavatory":[lavatory_1_recipes, lavatory_2_recipes, lavatory_3_recipes],
                "Workbench - Names":new_workbench_names,
                "Intel - Names":new_intel_names,
                "Nutrition - Names":new_nutrition_names,
                "Medstation - Names":new_medstation_names,
-               "Scav - Names":new_scav_names} 
+               "Scav - Names":new_scav_names,
+               "Lavatory - Names":new_lavatory_names} 
 
 
 

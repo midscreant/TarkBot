@@ -46,13 +46,18 @@ class Orchestrator:
         self.generator_count = ("generator",preset_dict["generator"])
         # self.air_count = ("air",preset_dict["air"])
         
+        self.quicksort_bool = preset_dict["quicksort"]
+        
         [self.workbench_tuple, self.intel_tuple, self.med_tuple, self.nutrition_tuple, self.scav_tuple, self.water_count, self.booze_count, self.generator_count]
         
         #if runtime is not set, run count MUST be established for each item. no infinite unless runtime set to that
-        #runtime should be in seconds
         self.runtime = preset_dict["runtime"]
+        if self.runtime != -1:
+            self.runtime = self.runtime * 900
         #increments of 15 min X checkup (15min = 900s)
         self.checkupFreq = preset_dict["checkup"]
+        if self.checkupFreq == -1:
+            self.checkupFreq = 1
         
         self.workbench_runs = 0
         self.intel_runs = 0
@@ -65,6 +70,7 @@ class Orchestrator:
         self.generator_runs = 0
         self.air_runs = 0
         self.btc_runs = 0
+        self.quicksort_runs = 0
         
         self.my_hideout = Hideout(self.root_path)
         self.my_checker = ErrorChecker()
@@ -244,6 +250,15 @@ class Orchestrator:
         #     print("Error: Fatal error while running BTC")
         #     return 'fail'
         
+    def runQuicksort(self):
+        status = self.my_checker.errorChecker(self.my_hideout.quickOrganizeInv)
+        if status == "fail":
+            print("Error: Quicksort failure. Aborting attempt...")
+            return 'fail'
+        elif status == "FATAL":
+            return "FATAL"
+        self.quicksort_runs += 1
+        
     def runAll(self):
         run_list = [self.workbench_tuple, self.intel_tuple, self.med_tuple, self.nutrition_tuple, self.scav_tuple, self.water_count, self.booze_count, self.generator_count]
         end_list = []
@@ -253,7 +268,12 @@ class Orchestrator:
                     end_list.append(item)
             elif item[1] != None:
                 end_list.append(item)
-        self.runBtc()        
+        if self.quicksort_bool == True:
+            if self.runQuicksort() == "FATAL":
+                return "FATAL"
+            
+        if self.runBtc() == "FATAL":
+            return "FATAL"
         for item in end_list:
             if item[0] == "generator":
                 status = self.runGenerator()
@@ -305,9 +325,8 @@ class Orchestrator:
     def orchestrator(self):
         while True:
             current_time = time()
-            if current_time - self.initial_epoch >= self.runtime:
-                total_time = current_time - self.initial_epoch
-                return total_time
+            if current_time - self.initial_epoch >= self.runtime and self.runtime != -1:
+                break
             #At this point, program assumes you are on tarkov fully loaded home page 
             status = self.my_hideout.getAllItems()
             if status == "FATAL":
@@ -317,6 +336,7 @@ class Orchestrator:
                 return "FATAL"
             print("Run complete successfully")
             sleep(900 * self.checkupFreq)
+        return "complete"
     
     def grabTotalTime(self):
         current_time = time()

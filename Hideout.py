@@ -51,6 +51,8 @@ class Hideout:
         self.medstation_recipes_path = os.path.join(self.recipes_path, "Medstation")
         #scav recipes path
         self.scav_recipes_path = os.path.join(self.recipes_path, "Scav")
+        #lavatory recipes path
+        self.lavatory_recipes_path = os.path.join(self.recipes_path, "Lavatory")
  
         #initial hideout press
         self.initial = False
@@ -61,12 +63,14 @@ class Hideout:
         self.nutrition_recipes = all_recipes["Nutrition"]
         self.intel_recipes = all_recipes["Intel"]
         self.medstation_recipes = all_recipes["Medstation"]
+        self.lavatory_recipes = all_recipes["Lavatory"]
         
         #complete dicts
         self.full_workbench_recipes = self.workbench_recipes[0] | self.workbench_recipes[1] | self.workbench_recipes[2] 
         self.full_nutrition_recipes = self.nutrition_recipes[0] | self.nutrition_recipes[1] | self.nutrition_recipes[2]
         self.full_intel_recipes = self.intel_recipes[0] | self.intel_recipes[1] 
         self.full_medstation_recipes = self.medstation_recipes[0] | self.medstation_recipes[1] | self.medstation_recipes[2]
+        self.full_lavatory_recipes = self.lavatory_recipes[0] | self.lavatory_recipes[1] | self.lavatory_recipes[2]
         
         #name dicts
         self.workbench_names = all_recipes["Workbench - Names"]
@@ -74,6 +78,7 @@ class Hideout:
         self.intel_names = all_recipes["Intel - Names"]
         self.medstation_names = all_recipes["Medstation - Names"]
         self.scav_names = all_recipes["Scav - Names"]
+        self.lavatory_names = all_recipes["Lavatory - Names"]
         
     #<><><><><><><><><><><><><>
     #Simple Hideout Functions 
@@ -100,7 +105,7 @@ class Hideout:
         self.hideoutReset()
         #Move left 
         pygui.moveTo(x=1,y=540)
-        sleep(0.5)
+        sleep(0.325)
         pygui.moveTo(x=960,y=540)
         sleep(1)
         
@@ -109,7 +114,7 @@ class Hideout:
         self.hideoutReset()
         #Move right
         pygui.moveTo(x=1919,y=540)
-        sleep(0.5)
+        sleep(0.45)
         pygui.moveTo(x=960,y=540) 
         sleep(1)
         
@@ -184,6 +189,8 @@ class Hideout:
                         _exit_count = 150
                     elif node == "nutrition":
                         _exit_count = 42
+                    elif node == "lavatory":
+                        _exit_count = 100
                     _i = 0
                     if _exit_count > 0:
                         while True:
@@ -191,7 +198,7 @@ class Hideout:
                                 complete = True
                                 break
                             pygui.moveTo(x=1410, y=655)
-                            pygui.scroll(-4000)
+                            pygui.scroll(-10)
                             _i += 1
                             status = self.checkForClaim(node)
                             if status == None:
@@ -244,6 +251,7 @@ class Hideout:
             os.chdir(self.workbench_recipes_path)
         elif node_name.lower() == "scav": 
             os.chdir(self.scav_recipes_path)
+        elif node_name.lower() == "lav":
         else:
             print("Error: Invalid node name...")
             return 'fail' 
@@ -424,6 +432,9 @@ class Hideout:
         elif node_name == "scav":
             _exit_count = 15
             os.chdir(self.scav_recipes_path)
+        elif node_name == "lav":
+            _exit_count = 100
+            os.chdir(self.lavatory_recipes_path)
         else:
             print("Error: Invalid node name passed")
             return 'fail'
@@ -435,7 +446,7 @@ class Hideout:
                 return 'fail'
             _i += 1
             pygui.moveTo(x=1410, y=655) 
-            pygui.scroll(-4000)
+            pygui.scroll(-10)
             print('scrolled') 
  
     
@@ -509,6 +520,9 @@ class Hideout:
         elif node_name == "med":
             dir_1 = self.medstation_names
             dir_2 = self.full_medstation_recipes 
+        elif node_name == "lav":
+            dir_1 = self.lavatory_names
+            dir_2 = self.full_lavatory_recipes
         elif node_name == "scav":
             dir_1 = {}
             for name, value in list(self.scav_names.items()):
@@ -561,6 +575,8 @@ class Hideout:
             node_name = "med"
         elif final_recipe_name in list(self.scav_names.values()):
             node_name = "scav"
+        elif final_recipe_name in list(self.full_lavatory_recipes.keys()):
+            node_name = "lav"
         else:
             print(final_recipe_name)
             print("Error: Invalid recipe")
@@ -624,8 +640,8 @@ class Hideout:
         sleep(1)
         
         
-    def clickMidLeft(self):
-        first_loc = pygui.locateOnScreen("NoFuel_gene.png", confidence=0.95)
+    def clickMidLeft(self, pic_name):
+        first_loc = pygui.locateOnScreen(pic_name, confidence=0.95)
         #moving to mid left of button
         _left, _top, _width, _height = first_loc
         _height = _height/2
@@ -644,8 +660,15 @@ class Hideout:
         sleep(0.25)
         #click auto-sort and confirm
         pygui.click(x=1244, y=922)
-        sleep(0.25)
+        sleep(0.25) 
         pygui.press('y')  
+        sleep(0.5)
+        os.chdir(self.submenu_path)
+        if pygui.locateOnScreen("sortFail_status.png",confidence=0.9) != None:
+            print("Failed to sort stash. Killing run")
+            return "FATAL"
+        else:
+            print("Inventory successfully sorted")
  
     #will need to make air filter to test
     
@@ -748,7 +771,7 @@ class Hideout:
             return
         print('No bitcoins to be claimed...')
         pygui.press("esc")
-       
+        
 
     def generatorChecker(self):
         if self.goToMainMenu() == "FATAL":
@@ -758,8 +781,68 @@ class Hideout:
         #generator images in submenu, _gene
         self.locateNode('generator')
         os.chdir(self.submenu_path) 
-        #listing loader imgs
-        self.clickMidLeft()
+        
+        #sub-process to check for empty fuel containers
+        removed_count = 0
+        while True:
+            if pygui.locateOnScreen("SmallNoFuel_gene.png", confidence=0.925) != None:
+                self.clickMidLeft("SmallNoFuel_gene.png")
+                point_x, point_y = pygui.locateCenterOnScreen("none_gene.png", confidence=0.9)
+                pygui.click(x=point_x, y=point_y)
+                sleep(0.5)
+                if pygui.locateCenterOnScreen("none_gene.png", confidence=0.9) != None:
+                    print("Error. Didn't remove fuel")
+                    continue
+                print("Empty small fuel removed")
+                removed_count += 1
+            elif pygui.locateOnScreen("BigNoFuel_gene.png", confidence=0.925) != None:
+                self.clickMidLeft("BigNoFuel_gene.png")
+                point_x, point_y = pygui.locateCenterOnScreen("none_gene.png", confidence=0.9)
+                pygui.click(x=point_x, y=point_y)
+                sleep(0.5)
+                if pygui.locateCenterOnScreen("none_gene.png", confidence=0.9) != None:
+                    print("Error. Didn't remove fuel")
+                    continue
+                print("Empty big fuel removed")
+                removed_count += 1
+            else:
+                break
+            
+        print("All empties emptied")
+        
+        #click traders button
+        
+        if removed_count > 0:
+            self.goToTraders()
+            self.goToJaeger()
+            pygui.moveTo(x=1621, y=587)
+            sleep(0.25)
+            scroll_count = 0
+            for i in range(removed_count):
+                while True:
+                    pygui.scroll(-10)
+                    scroll_count += 1
+                    if scroll_count > 125:
+                        print("wasn't able to find all of the fuel")
+                        return "FATAL"
+                    if pygui.locateOnScreen("SmallFuelEmptySale_gene.png", confidence=0.925) != None:
+                        point_x, point_y =  pygui.locateOnScreen("SmallFuelEmptySale_gene.png", confidence=0.925)
+                        with pygui.hold("ctrl"):
+                            pygui.click(x=point_x, y=point_y)
+                        break
+                    elif pygui.locateOnScreen("BigFuelEmptySale_gene.png", confidence=0.925) != None:
+                        point_x, point_y =  pygui.locateOnScreen("BigFuelEmptySale_gene.png", confidence=0.925)
+                        with pygui.hold("ctrl"):
+                            pygui.click(x=point_x, y=point_y)
+                        break
+            point_x, point_y = pygui.locateCenterOnScreen("deal_claim.png", confidence=0.925)
+            pygui.click(point_x, point_y)
+            if self.goToMainMenu() == "FATAL":
+                return "FATAL"
+            self.goToHideout() 
+            self.locateNode('generator')
+            self.clickMidLeft("NoFuel_gene.png")
+                
         if pygui.locateOnScreen("BigFuelLoader_gene.png", confidence=0.9) != None:
             fuel_loc_x, fuel_loc_y = pygui.locateCenterOnScreen("BigFuelFull_gene.png")
             pygui.click(x=fuel_loc_x, y=fuel_loc_y)
@@ -785,7 +868,7 @@ class Hideout:
             #can fail if sold out or not enough $. Add check
             sleep(1)
             self.locateNode('generator')
-            self.clickMidLeft()
+            self.clickMidLeft("NoFuel_gene.png")
             fuel_loc_x, fuel_loc_y = pygui.locateOnScreen("BigFuelFull_gene.png", confidence=0.9)
             pygui.click(x=fuel_loc_x, y=fuel_loc_y)
             print("Large Fuel Loaded")

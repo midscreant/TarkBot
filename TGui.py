@@ -29,6 +29,8 @@ class TGui:
     def __init__(self):
         
         self.root_path = os.getcwd()
+        # split_path = os.getcwd().split("\\\\")
+        # new_path = "\\\\".join(split_path[:-2])
         self.presets_path = os.path.join(self.root_path, "Presets")
         
         #INITIAL CREATION
@@ -39,7 +41,7 @@ class TGui:
         os.chdir(self.presets_path)
         #all file names without extension
         self.preset_files = [f for f in os.listdir('.') if os.path.isfile(f)]
-        self.preset_names = []
+        self.preset_names = ['Select an Option...']
         for filename in self.preset_files:
             if filename.endswith(".txt"):
                 self.preset_names.append(filename[:-4])
@@ -80,6 +82,8 @@ class TGui:
         self.nutrition_value = tk.StringVar()
         self.scav_value = tk.StringVar()
         #OTHER THAN PRESET, VALUE HOLDS RECIPE NAME. CAN BE GIVEN DIRECTLY TO MAKE RECIPE
+        
+        self.quicksort_checkbox_value = tk.IntVar()
         
         self.return_value = None
         
@@ -128,8 +132,6 @@ class TGui:
         
         self.main_label = tk.Label(self.root_window, font=("Arial Bold", 20), text="TarkBot v1.0")
         self.main_label.grid(column=0, row=0, padx=(2.5, 100), pady=5)
-        self.main_sublabel = tk.Label(self.root_window, font=("Arial", 8), text="Unplug all but one monitor")
-        self.main_sublabel.grid(column=0, row=1)
         
         self.preset_label = tk.Label(self.root_window, text="Preset", font=("Arial Bold", 8), borderwidth=2, relief="ridge")
         self.preset_label.grid(column=0, row=2, padx=2.5, pady=5)
@@ -163,9 +165,10 @@ class TGui:
             #in future, save this to a txt file as saved config
         self.select_button = tk.Button(self.root_window, text="Select file", width=10, command=selectFile)
         self.select_button.grid(column=0, row=16, padx=2.5, pady=5)
-        
+        self.quicksort_checkbox = tk.Checkbutton(self.root_window, text="Enable\nInventory Quicksort", variable=self.quicksort_checkbox_value, onvalue=1, offvalue=0)
+        self.quicksort_checkbox.grid(column=0, row=17, padx=2.5, pady=5)
         self.time_label = tk.Label(self.root_window,font=("Arial Bold", 15))
-        self.time_label.grid(column=0, row=17, rowspan=5)
+        self.time_label.grid(column=0, row=19, rowspan=4)
         
         self.start_label = tk.Label(self.root_window, font=("Arial", 10))
         self.start_label.grid(column=0, row=23)
@@ -392,28 +395,47 @@ class TGui:
         os.chdir(self.root_path)
         
     def deletePreset(self):
-        os.chdir(self.presets_path)
-        file_name = self.preset_menu["text"] + ".txt"
-        if file_name in self.preset_files:
-            try:
-                os.remove(file_name)
-                self.lower_preset_label["text"] = "Preset deleted: " + file_name[:-4]
-            except:
-                self.lower_preset_label["text"] = "Error while trying to delete preset"
-        os.chdir(self.root_path)
+
+        delete_text = "Are you sure you want to delete \"" + self.preset_menu["text"] + "\"?"
+        
+        def deletePresetHelper():
+            os.chdir(self.presets_path)
+            file_name = self.preset_menu["text"] + ".txt"
+            if file_name in self.preset_files:
+                try:
+                    os.remove(file_name)
+                    self.lower_preset_label["text"] = "Preset deleted: " + file_name[:-4]
+                    os.chdir(self.root_path)
+                    self.preset_names.remove(self.preset_menu["text"])
+                    self.updateMenu(self.preset_menu, self.preset_names)
+                    delete_window.destroy()
+                except:
+                    self.lower_preset_label["text"] = "Error while trying to delete preset"
+                    os.chdir(self.root_path)
+                    delete_window.destroy()
+        
+        delete_window = tk.Tk()
+        delete_window.title("Are you sure?")
+        delete_label = tk.Label(delete_window, text=delete_text)
+        delete_label.grid(column=0, row=0, padx=2.5, pady=5)
+        yes_button = tk.Button(delete_window, text="Yes", command=deletePresetHelper, width=25)
+        yes_button.grid(column=0, row=1, padx=2.5, pady=5)
+        no_button = tk.Button(delete_window, text="No", command=delete_window.destroy, width=25)
+        no_button.grid(column=0, row=2, padx=2.5, pady=5)
+        delete_window.mainloop()
                 
                 
-            
-        
-        
     def countCheck(self, value):
         value_inside = None
+        if value == None:
+            self.start_label["text"] = "Error: No path selection"
         if type(value) != str and type(value) != int:
            value_inside = value.get()
         else:
            value_inside = value
-        if "BsgLauncher" in value_inside:
-            return value_inside
+        if type(value_inside) == str:
+            if "BsgLauncher" in value_inside:
+                return value_inside
         try:
            count = int(value_inside.strip())
            if count <= -1:
@@ -457,19 +479,25 @@ class TGui:
                                      "water":self.water_count.get(), 
                                      "generator":self.generator_count.get(), 
                                      "runtime":self.time_count.get(), 
-                                     "checkup":self.checkup_count.get()} 
+                                     "checkup":self.checkup_count.get(),
+                                     "quicksort":self.quicksort_checkbox_value.get()} 
         
         if self.countCheck(self.time_count) == None or self.countCheck(self.checkup_count) == None:
             self.start_label["text"] = "Error: Time or checkup entry invalid. Must be int"
-            # return 'fail'
+            return 'fail'
         
         if self.path_space["text"].lower().endswith("bsglauncher.exe") != True:
             self.start_label["text"] = "Error: Invalid path selection"
-            # return 'fail'
+            return 'fail'
         
         self.start_label["text"] = " "
         
         self.start_return_dict = self.fullCheck()
+        
+        if self.var_to_node_name["quicksort"] == 1:
+            self.start_return_dict["quicksort"] = True
+        else:
+            self.start_return_dict["quicksort"] = False
         
         dict_string = ""
         for name, value in list(self.start_return_dict.items()):
@@ -509,7 +537,11 @@ class TGui:
         self.my_booter = BootUp(self.path_space["text"], self.root_path)
         boot_status = self.my_booter.fullRun()
         if boot_status != "success":
-           self.start_label["text"] = "Error: Tarkov was not able to boot. Closing bot" 
+           self.start_label["text"] = "Error: Tarkov was not able to boot. Closing bot"
+           for proc in psutil.process_iter():
+               if proc.name() in self.process_names:
+                   print("Killing " + proc.name() + " instance")
+                   proc.kill()
            return 'fail'
        
         self._kill = False
@@ -534,6 +566,9 @@ class TGui:
         if status == "FATAL":
             print("Exiting program due to fatal error...")
             self._kill = True
+        if status == "complete":
+            print("Exiting program due to time completion...")
+            self._kill = True
         #May need to call orchestrator within new tkinter main loop, as i dont think it will get to it otherwise
         #IDEA FOR EXIT KEY. BOOT HAPPENS, LOOKS FOR MAIN MENU. ONCE MAIN MENU FOUND, OPEN TKINTER WINDOW IN BOTTOM RIGHT, HAVE IT ALWAYS STAY ON SCREEN, MAKE EXIT KEY
         # self.exit_window.mainloop()  
@@ -547,14 +582,10 @@ class TGui:
                 if proc.name() in self.process_names:
                     print("Killing " + proc.name() + " instance")
                     proc.kill()
-                    self.process_names.pop(self.process_names.index(proc.name()))
             
-            if len(self.process_names) < 1:
-                print("All relevant processes killed")
-                print("End of script reached.\nAlloted time: "+str(round(total_time, 2))+" seconds.\nThank you for choosing TarkBot!")
-            else:
-                print("End of script reached.\nAlloted time: "+str(round(total_time, 2))+" seconds.\nThank you for choosing TarkBot!")
-                print("\n\n\nERROR: not all processes killed. Must kill manually before new run")
+            print("All relevant processes killed")
+            print("End of script reached.\nAlloted time: "+str(round(total_time, 2))+" seconds.\nThank you for choosing TarkBot!")
+
     
 
 my_gui = TGui()    

@@ -22,8 +22,8 @@ class BootUp:
     def __init__(self, tarkov_path, base_path):
         self.tarkov_path = tarkov_path
         self.base_path = base_path
-        self.photos_path = os.path.join(self.base_path, 'Icons')
-        self.blocks_path = os.path.join(self.photos_path, "Submenu_Options")
+        self.icons_path = os.path.join(self.base_path, 'Icons')
+        self.submenu_path = os.path.join(self.icons_path, "Submenu_Options")
  
     def runExe(self):
         #doesnt work
@@ -35,7 +35,7 @@ class BootUp:
         
     def checkForButtons(self):
         #checks if there are eft buttons on screen
-        os.chdir(self.blocks_path)
+        os.chdir(self.submenu_path)
         i = 0
         while True:
             if pygui.locateOnScreen("mainmenu_block.png", confidence=0.9):

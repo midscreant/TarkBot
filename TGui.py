@@ -84,6 +84,8 @@ class TGui:
         #OTHER THAN PRESET, VALUE HOLDS RECIPE NAME. CAN BE GIVEN DIRECTLY TO MAKE RECIPE
         
         self.quicksort_checkbox_value = tk.IntVar()
+        self.flea_checkbox_value = tk.IntVar()
+        self.insurance_checkbox_value = tk.IntVar()
         
         self.return_value = None
         
@@ -167,8 +169,12 @@ class TGui:
         self.select_button.grid(column=0, row=16, padx=2.5, pady=5)
         self.quicksort_checkbox = tk.Checkbutton(self.root_window, text="Enable\nInventory Quicksort", variable=self.quicksort_checkbox_value, onvalue=1, offvalue=0)
         self.quicksort_checkbox.grid(column=0, row=17, padx=2.5, pady=5)
+        self.insurance_checkbox = tk.Checkbutton(self.root_window, text="Enable\nInsurance Checks", variable=self.insurance_checkbox_value, onvalue=1, offvalue=0)
+        self.insurance_checkbox.grid(column=0, row=18, padx=2.5, pady=5)
+        self.flea_checkbox = tk.Checkbutton(self.root_window, text="Enable\nFlea Checks", variable=self.flea_checkbox_value, onvalue=1, offvalue=0)
+        self.flea_checkbox.grid(column=0, row=19, padx=2.5, pady=5)
         self.time_label = tk.Label(self.root_window,font=("Arial Bold", 15))
-        self.time_label.grid(column=0, row=19, rowspan=4)
+        self.time_label.grid(column=0, row=20, rowspan=2)
         
         self.start_label = tk.Label(self.root_window, font=("Arial", 10))
         self.start_label.grid(column=0, row=23)
@@ -480,7 +486,9 @@ class TGui:
                                      "generator":self.generator_count.get(), 
                                      "runtime":self.time_count.get(), 
                                      "checkup":self.checkup_count.get(),
-                                     "quicksort":self.quicksort_checkbox_value.get()} 
+                                     "quicksort":self.quicksort_checkbox_value.get(),
+                                     "flea":self.flea_checkbox_value.get(),
+                                     "insurance":self.insurance_checkbox_value.get()} 
         
         if self.countCheck(self.time_count) == None or self.countCheck(self.checkup_count) == None:
             self.start_label["text"] = "Error: Time or checkup entry invalid. Must be int"
@@ -498,6 +506,16 @@ class TGui:
             self.start_return_dict["quicksort"] = True
         else:
             self.start_return_dict["quicksort"] = False
+            
+        if self.var_to_node_name["flea"] == 1:
+            self.start_return_dict["flea"] = True
+        else:
+            self.start_return_dict["flea"] = False
+            
+        if self.var_to_node_name["insurance"] == 1:
+            self.start_return_dict["insurance"] = True
+        else:
+            self.start_return_dict["insurance"] = False
         
         dict_string = ""
         for name, value in list(self.start_return_dict.items()):

@@ -47,8 +47,8 @@ class Orchestrator:
         # self.air_count = ("air",preset_dict["air"])
         
         self.quicksort_bool = preset_dict["quicksort"]
-        
-        [self.workbench_tuple, self.intel_tuple, self.med_tuple, self.nutrition_tuple, self.scav_tuple, self.water_count, self.booze_count, self.generator_count]
+        self.flea_bool = preset_dict["flea"]
+        self.insurance_bool = preset_dict["insurance"]
         
         #if runtime is not set, run count MUST be established for each item. no infinite unless runtime set to that
         self.runtime = preset_dict["runtime"]
@@ -62,7 +62,7 @@ class Orchestrator:
         self.workbench_runs = 0
         self.intel_runs = 0
         self.med_runs = 0
-        # self.lav_runs = 0
+        self.lav_runs = 0
         self.nutrition_runs = 0
         self.scav_runs = 0
         self.booze_runs = 0
@@ -71,6 +71,8 @@ class Orchestrator:
         self.air_runs = 0
         self.btc_runs = 0
         self.quicksort_runs = 0
+        self.flea_runs = 0
+        self.insurance_runs = 0
         
         self.my_hideout = Hideout(self.root_path)
         self.my_checker = ErrorChecker()
@@ -81,7 +83,6 @@ class Orchestrator:
         if self.workbench_runs == self.workbench_tuple[1][1]:
             print("Workbench run count already reached...")
             return
-        # try:
         status = self.my_checker.errorChecker(self.my_hideout.makeRecipe, self.workbench_tuple[1][0]) 
         if status == "fail":
             print("Error: Workbench failure. Aborting attempt...")
@@ -89,9 +90,6 @@ class Orchestrator:
         elif status == "FATAL":
             return "FATAL"
         self.workbench_runs += 1
-        # except:
-        #     print("Error: Fatal error while running workbench")
-        #     return 'fail'
         
     def runIntel(self):
         if self.intel_runs == self.intel_tuple[1][1]:
@@ -125,21 +123,21 @@ class Orchestrator:
             print("Error: Fatal error while running medstation")
             return 'fail'
     
-    # def runLav(self):
-    #     if self.lav_runs == self.lav_tuple[1][1]:
-    #         print("Lavatory run count already reached...")
-    #         return
-    #     try:
-    #         status = self.my_checker.errorChecker(self.my_hideout.makeRecipe, self.lav_tuple[1][0]) 
-    #         if status == "fail":
-    #             print("Error: Lavatory failure. Aborting attempt...")
-    #             return 'fail'
-    #         elif status == "FATAL":
-    #             return "FATAL"
-    #         self.lav_runs += 1
-    #     except:
-    #         print("Error: Fatal error while running lavatory")
-    #         return 'fail'
+    def runLav(self):
+        if self.lav_runs == self.lav_tuple[1][1]:
+            print("Lavatory run count already reached...")
+            return
+        try:
+            status = self.my_checker.errorChecker(self.my_hideout.makeRecipe, self.lav_tuple[1][0]) 
+            if status == "fail":
+                print("Error: Lavatory failure. Aborting attempt...")
+                return 'fail'
+            elif status == "FATAL":
+                return "FATAL"
+            self.lav_runs += 1
+        except:
+            print("Error: Fatal error while running lavatory")
+            return 'fail'
         
     def runNutrition(self):
         if self.nutrition_runs == self.nutrition_tuple[1][1]:
@@ -259,6 +257,24 @@ class Orchestrator:
             return "FATAL"
         self.quicksort_runs += 1
         
+    def runFleaClaim(self):
+        status = self.my_checker.errorChecker(self.my_hideout.claimFlea)
+        if status == "fail":
+            print("Error: Flea failure. Aborting attempt...")
+            return 'fail'
+        elif status == "FATAL":
+            return "FATAL"
+        self.flea_runs += 1
+        
+    def runInsuranceClaim(self):
+        status = self.my_checker.errorChecker(self.my_hideout.claimInsurance)
+        if status == "fail":
+            print("Error: Insurance failure. Aborting attempt...")
+            return 'fail'
+        elif status == "FATAL":
+            return "FATAL"
+        self.insurance_runs += 1
+        
     def runAll(self):
         run_list = [self.workbench_tuple, self.intel_tuple, self.med_tuple, self.nutrition_tuple, self.scav_tuple, self.water_count, self.booze_count, self.generator_count]
         end_list = []
@@ -268,8 +284,15 @@ class Orchestrator:
                     end_list.append(item)
             elif item[1] != None:
                 end_list.append(item)
+                
         if self.quicksort_bool == True:
             if self.runQuicksort() == "FATAL":
+                return "FATAL"
+        if self.flea_bool == True:
+            if self.runFleaClaim() == "FATAL":
+                return "FATAL"
+        if self.insurance_bool == True:
+            if self.runInsuranceClaim() == "FATAL":
                 return "FATAL"
             
         if self.runBtc() == "FATAL":
@@ -291,8 +314,8 @@ class Orchestrator:
                 status = self.runMed()
                 if status == "FATAL":
                     return "FATAL"
-            # elif item[0] == "lav":
-            #     self.runLav()
+            elif item[0] == "lav":
+                self.runLav()
                 if status == "FATAL":
                     return "FATAL"
             elif item[0] == "nutrition":

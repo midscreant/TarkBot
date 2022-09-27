@@ -252,6 +252,7 @@ class Hideout:
         elif node_name.lower() == "scav": 
             os.chdir(self.scav_recipes_path)
         elif node_name.lower() == "lav":
+            os.chdir(self.lavatory_recipes_path)
         else:
             print("Error: Invalid node name...")
             return 'fail' 
@@ -954,6 +955,148 @@ class Hideout:
         else:
             print("ERROR: Invalid item passage")
             return 'fail'
+        
+        
+    def goToMessenger(self):
+        if pygui.locateCenterOnScreen("messenger_button.png", confidence=0.9) != None:
+            point_x, point_y = pygui.locateCenterOnScreen("messenger_button.png", confidence=0.9)
+            pygui.click(x=point_x, y=point_y)
+            sleep(0.25)
+        else:
+            print("Error. No messenger button found. Flea claim failed")
+            return "fail"
+        
+        
+    def checkReceive(self):
+        if pygui.locateCenterOnScreen("ReceiveAll_claim.png", confidence=0.9) != None:
+            point_x, point_y = pygui.locateCenterOnScreen("ReceiveAll_claim.png", confidence=0.9)
+            pygui.click(x=point_x, y=point_y)
+            sleep(0.5)
+            if pygui.locateCenterOnScreen("ReceiveAll_claim.png", confidence=0.8) != None:
+                point_x, point_y = pygui.locateCenterOnScreen("ReceiveAll_claim.png", confidence=0.8)
+                pygui.click(x=point_x, y=point_y)
+                sleep(0.15)
+                if pygui.locateCenterOnScreen("NoSpace_status.png", confidence=0.9) != None:
+                    #this means you couldn't claim items
+                     print("No space to claim items. Fatal error")
+                     return "FATAL"
+                sleep(0.5)
+                if pygui.locateCenterOnScreen("Accept_claim.png", confidence=0.9) != None:
+                    point_x, point_y = pygui.locateCenterOnScreen("Accept_claim.png", confidence=0.9)
+                    pygui.click(x=point_x, y=point_y)
+                    sleep(0.5)
+                    pygui.press('y')
+                    print("All flea items successfully claimed")
+                    sleep(0.5)
+                else:
+                    print("Error: No Acceptance found. Bad bug")
+                    return "FATAL"
+            else:
+                print("Error. 2nd receive button not found")
+                return "FATAL"
+        else:
+            return 'fail'
+        
+        
+    def claimFlea(self):
+        if self.goToMainMenu() == "FATAL":
+            return "FATAL"
+        
+        os.chdir(self.submenu_path)
+        if self.goToMessenger() == "fail":
+            return "fail"
+        
+        if pygui.locateCenterOnScreen("RagmanActive_selection.png", confidence=0.9) != None:
+            point_x, point_y = pygui.locateCenterOnScreen("RagmanActive_selection.png", confidence=0.9)
+            pygui.click(x=point_x, y=point_y)
+            sleep(0.25)
+        elif pygui.locateCenterOnScreen("RagmanInactive_selection.png", confidence=0.9) != None:
+            point_x, point_y = pygui.locateCenterOnScreen("RagmanInactive_selection.png", confidence=0.9)
+            pygui.click(x=point_x, y=point_y)
+            sleep(0.25)
+        else:
+            print("Error: Ragman not found. Flea claim failed")
+            return "fail"
+        
+        status = self.checkReceive()
+        if status == "fail":
+            print("No flea items to claim")
+        elif status == "FATAL":
+            print("Error:Flea claim Fatal error")
+            return "FATAL"
+
+    
+    def claimInsurance(self):
+        if self.goToMainMenu() == "FATAL":
+            return "FATAL"
+        
+        #checks prapor then therapist
+        
+        os.chdir(self.submenu_path)
+        if self.goToMessenger() == "fail":
+            return "fail"
+        
+        if pygui.locateCenterOnScreen("PraporActive_selection.png", confidence=0.9) != None:
+            point_x, point_y = pygui.locateCenterOnScreen("PraporActive_selection.png", confidence=0.9)
+            pygui.click(x=point_x, y=point_y)
+            sleep(0.25)
+        elif pygui.locateCenterOnScreen("PraporInactive_selection.png", confidence=0.9) != None:
+            point_x, point_y = pygui.locateCenterOnScreen("PraporInactive_selection.png", confidence=0.9)
+            pygui.click(x=point_x, y=point_y)
+            sleep(0.25)
+        else:
+            print("Error: Prapor not found. Flea claim failed")
+            return "fail"
+        
+        status_1 = self.checkReceive()
+        if status_1 == "fail":
+            print("No items to claim from Prapor")
+        elif status_1 == "FATAL":
+            return "FATAL"
+        else:
+            print("Claimed items from Prapor")
+            return
+        
+        if pygui.locateCenterOnScreen("TherapistActive_selection.png", confidence=0.9) != None:
+            point_x, point_y = pygui.locateCenterOnScreen("TherapistActive_selection.png", confidence=0.9)
+            pygui.click(x=point_x, y=point_y)
+            sleep(0.25)
+        elif pygui.locateCenterOnScreen("TherapistInactive_selection.png", confidence=0.9) != None:
+            point_x, point_y = pygui.locateCenterOnScreen("TherapistInactive_selection.png", confidence=0.9)
+            pygui.click(x=point_x, y=point_y)
+            sleep(0.25)
+        else:
+            print("Error: Therapist not found. Flea claim failed")
+            return "fail"
+        
+        status_2 = self.checkReceive()
+        if status_2 == "fail":
+            print("No items to claim from Therapist")
+            print("No insurance to claim at all")
+        elif status_2 == "FATAL":
+            return "FATAL"
+        else:
+            print("Claimed items from Therapist")
+            return
+           
+            
+        
+        
+        
+    def checkForPrompt(self, claim="yes"):
+        #checks for a prompt on screen. presses yes by default
+        if pygui.locateOnScreen("confirmation_status.png", confidence=0.9) != None and pygui.locateOnScreen("yesno_button.png", confidence=0.9) != None:
+            if claim == "yes":
+                point_x, point_y = pygui.locateCenterOnScreen("yes_button.png", confidence=0.9)
+                pygui.click(x=point_x, y=point_y)
+            elif claim == "no":
+                point_x, point_y = pygui.locateCenterOnScreen("no_button.png", confidence=0.9)
+                pygui.click(x=point_x, y=point_y)
+            else:
+                print("Error: Invalid claim input")
+                return
+        
+        
 
  
  

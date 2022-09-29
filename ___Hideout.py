@@ -187,105 +187,68 @@ class Hideout:
         
         self.goToHideout()
         
-        os.chdir(self.subnodes_path)
-        dir_list = [f for f in os.listdir('.') if os.path.isfile(f) and '_subnode' in f]
-        right_nodes = ["med", "nutrition", "booze", "water"]
-        left_nodes = ["workbench", "intel", "lav", "btc"]
-        middle_nodes = ["scav"]
-        total_nodes = ["med", "nutrition", "booze", "water","workbench", "intel", "lav", "btc","scav"]
-        scroll_counts = {"med":37, "nutrition":32, "booze":0, "water":0, "workbench":130, "intel":20, "lav":55, "btc":0, "scav":7} 
+        os.chdir(self.nodes_path)
+        dir_list = [f for f in os.listdir('.') if os.path.isfile(f) and '_node' in f]
+        _clicked = False
+        for node in dir_list:
+            if pygui.locateOnScreen(node, confidence=0.9) != None:
+                point_x, point_y = pygui.locateCenterOnScreen(node, confidence=0.8)
+                pygui.click(x=point_x, y=point_y)
+                sleep(0.5)
+                _clicked = True
+                break
+        if _clicked == False:
+            print("Error. No node found")
+            return "fail"
+        
+        scroll_nodes = ["medstation", "lavatory", "scav", "intel", "workbench", "nutrition"]
+                    
         claimed_count = 0
-        for node in total_nodes:
-            node_found = False
-            if node in right_nodes:
-                self.hideoutMoveRight()
-                node_complete_name = node+"Complete_subnode.png"
-                node_incomplete_name = node+"Incomplete_subnode.png"
-                os.chdir(self.subnodes_path)
-                if pygui.locateCenterOnScreen(node_complete_name, confidence=0.625) != None:
-                    point_x, point_y = pygui.locateCenterOnScreen(node_complete_name, confidence=0.625)
-                    pygui.click(x=point_x, y=point_y)
-                    node_found = True
-                    sleep(0.5)
-                elif pygui.locateCenterOnScreen(node_incomplete_name, confidence=0.625) != None:
-                    point_x, point_y = pygui.locateCenterOnScreen(node_incomplete_name, confidence=0.625)
-                    pygui.click(x=point_x, y=point_y)
-                    node_found = True
-                    sleep(0.5)
-            elif node in left_nodes:
-                self.hideoutMoveLeft()
-                node_complete_name = node+"Complete_subnode.png"
-                node_incomplete_name = node+"Incomplete_subnode.png"
-                os.chdir(self.subnodes_path)
-                if pygui.locateCenterOnScreen(node_complete_name, confidence=0.625) != None:
-                    point_x, point_y = pygui.locateCenterOnScreen(node_complete_name, confidence=0.625)
-                    pygui.click(x=point_x, y=point_y)
-                    node_found = True
-                    sleep(0.5)
-                elif pygui.locateCenterOnScreen(node_incomplete_name, confidence=0.625) != None:
-                    point_x, point_y = pygui.locateCenterOnScreen(node_incomplete_name, confidence=0.625)
-                    pygui.click(x=point_x, y=point_y)
-                    node_found = True
-                    sleep(0.5)
-            elif node in middle_nodes:
-                self.hideoutReset()
-                node_complete_name = node+"Complete_subnode.png"
-                node_incomplete_name = node+"Incomplete_subnode.png"
-                os.chdir(self.subnodes_path)
-                if pygui.locateCenterOnScreen(node_complete_name, confidence=0.625) != None:
-                    point_x, point_y = pygui.locateCenterOnScreen(node_complete_name, confidence=0.625)
-                    pygui.click(x=point_x, y=point_y)
-                    node_found = True
-                    sleep(0.5)
-                elif pygui.locateCenterOnScreen(node_incomplete_name, confidence=0.625) != None:
-                    point_x, point_y = pygui.locateCenterOnScreen(node_incomplete_name, confidence=0.625)
-                    pygui.click(x=point_x, y=point_y)
-                    node_found = True
-                    sleep(0.5)
+        os.chdir(self.submenu_path)
+        for i in range(20):
+            complete = False
+            for node in scroll_nodes:
+                node_name = node + "_name.png"
+                if pygui.locateOnScreen(node_name, confidence=0.75) != None:
+                    _exit_count = 0
+                    if node == "medstation":
+                        _exit_count = 37
+                    elif node == "scav":
+                        _exit_count = 7
+                    elif node == "intel":
+                        _exit_count = 20
+                    elif node == "workbench":
+                        _exit_count = 130
+                    elif node == "nutrition":
+                        _exit_count = 32
+                    elif node == "lavatory":
+                        _exit_count = 55
+                    _i = 0
+                    if _exit_count > 0:
+                        while True:
+                            if _i >= _exit_count:
+                                complete = True
+                                break
+                            pygui.moveTo(x=1410, y=655)
+                            pygui.scroll(-10)
+                            _i += 1
+                            status = self.checkForClaim(node)
+                            if status == None:
+                                print("Claimed 2")
+                                claimed_count += 1
+                                print('Done Scrolling')
+                                complete = True
+                                break
+                complete = False
+            if complete == False:
+                    status = self.checkForClaim("na")
+                    if status == None:
+                        print("Claimed")
+                        claimed_count += 1
+            sleep(0.5)
+            pygui.click(x=1870, y=999)
+            sleep(0.5)
             
-            if node_found == True:
-                print(node + " identified and clicked")
-            else:
-                print("Error: Node not found in search..killing")
-                return "FATAL"
-            
-            if pygui.locateCenterOnScreen("production_status.png", confidence=0.8) != None:
-                #this means the node is still producing, so can't be claimed
-                print(node + " currently running. Does not need a check...")
-                continue
-            
-            if pygui.locateCenterOnScreen("deadStart_status.png", confidence=0.85) == None and node != "water":
-                #this means that the node isn't running, so can be killed
-                print(node + " not running. Does not need a check...")
-                continue
-            
-            checker = False
-            
-            for i in range(scroll_counts[node]):
-                pygui.moveTo(x=1410, y=655)
-                pygui.scroll(-10)
-                status = self.checkForClaim(node)
-                if status == None:
-                    print("Item claimed for node " + node)
-                    claimed_count += 1
-                    checker = True
-                    break
-            
-            if checker == True:
-                continue
-            
-            if scroll_counts[node] == 0:
-                status = self.checkForClaim(node)
-                if status == None:
-                    print("Item claimed for node " + node)
-                    claimed_count += 1
-                    continue
-                else:
-                    print("Nothing to grab from " + node)
-                    continue
-                
-            print("Nothing to grab from node " + node)
-                
         print("Successfully grabbed " + str(claimed_count) + " item(s)")
         
         

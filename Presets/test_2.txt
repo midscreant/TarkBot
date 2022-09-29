@@ -1,0 +1,1 @@
+{'workbench': ('9x18mm PM RG028 gzh', 1), 'intel': ('Secure Flash Drive', 1), 'nutrition': ('Pack of Sugar', 1), 'med': ('AI-2 medkit', 1), 'lav': ('Cordura Polyamide Fabric', 1), 'scav': (None, None), 'booze': 1, 'water': 1, 'generator': 1, 'runtime': -1, 'checkup': 1, 'path': 'C:/Battlestate Games/BsgLauncher/BsgLauncher.exe'}

@@ -221,7 +221,7 @@ class Orchestrator:
         self.flea_runs += 1
         
     def runInsuranceClaim(self):
-        status = self.my_hideout.errorChecker(self.claimInsurance)
+        status = self.my_checker.errorChecker(self.my_hideout.claimInsurance)
         if status == "fail":
             print("Error: Insurance failure. Aborting attempt...")
             return 'fail'
@@ -301,9 +301,9 @@ class Orchestrator:
             if current_time - self.initial_epoch >= self.runtime and self.runtime != -1:
                 break
             #At this point, program assumes you are on tarkov fully loaded home page 
-            # status = self.my_hideout.getAllItems()
-            # if status == "FATAL":
-            #     return "FATAL"
+            status = self.my_hideout.getAllItems()
+            if status == "FATAL":
+                return "FATAL"
             status = self.runAll()
             if status == "FATAL":
                 return "FATAL"

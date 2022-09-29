@@ -20,8 +20,7 @@ import ast
 # {"workbench":(workbench_value, workbench_count), "intel":(intel_value, intel_count), "med":(med_value, med_count), 
 #  "lav":(lav_value, lav_count), "nutrition":(nutrition_value, nutrition_count), "scav":(scav_value, scav_count), 
 #  "booze":booze_count (may be -1, which means run the whole time. same w others), "water":water_count, 
-#  "generator":generator_count (represents how many big cans to add throughout run. -1 means always keep filled w/ at least 1 tank), 
-#  "air":air_count (almost always gonna be 0),
+#  "generator":generator_count (represents how many big cans to add throughout run. -1 means always keep filled w/ at least 1 tank),
 #  "runtime":time_count, "checkup":checkup_count }+
 
 class TGui:
@@ -50,14 +49,6 @@ class TGui:
         print(self.preset_names)
             
         os.chdir(self.root_path)
-        
-
-        #MISSING LAVATORY AND AIR - should just cut air who tf is gonna run air remotely
-            # next step is advanced error checking and bug testing
-                #error checking at major spots
-                    #may wanna check status of working nodes after starting to confirm
-            #after that is captcha problem
-                #try ocr text -> url strat
             
         #VARIABLE CREATION
         self.time_count = tk.StringVar()
@@ -86,6 +77,7 @@ class TGui:
         self.quicksort_checkbox_value = tk.IntVar()
         self.flea_checkbox_value = tk.IntVar()
         self.insurance_checkbox_value = tk.IntVar()
+        self.reboot_checkbox_value = tk.IntVar()
         
         self.return_value = None
         
@@ -104,18 +96,21 @@ class TGui:
         self.nutrition_recipes = all_recipes["Nutrition"]
         self.intel_recipes = all_recipes["Intel"]
         self.medstation_recipes = all_recipes["Medstation"]
+        self.lavatory_recipes = all_recipes["Lavatory"]
 
         #complete dicts
         self.full_workbench_recipes = self.workbench_recipes[0] | self.workbench_recipes[1] | self.workbench_recipes[2] 
         self.full_nutrition_recipes = self.nutrition_recipes[0] | self.nutrition_recipes[1] | self.nutrition_recipes[2]
         self.full_intel_recipes = self.intel_recipes[0] | self.intel_recipes[1]
         self.full_medstation_recipes = self.medstation_recipes[0] | self.medstation_recipes[1] | self.medstation_recipes[2]
+        self.full_lavatory_recipes = self.lavatory_recipes[0] | self.lavatory_recipes[1] | self.lavatory_recipes[2]
 
         #complete name lists
         self.full_workbench_names = ["Select an Option..."] + list(self.full_workbench_recipes.keys() )
         self.full_nutrition_names = ["Select an Option..."] + list(self.full_nutrition_recipes.keys())
         self.full_intel_names = ["Select an Option..."] + list(self.full_intel_recipes.keys())
         self.full_medstation_names = ["Select an Option..."] + list(self.full_medstation_recipes.keys())
+        self.full_lavatory_names = ["Select an Option..."] + list(self.full_lavatory_recipes.keys())
         self.full_scav_names = ["Select an Option..."] + list(all_recipes["Scav - Names"].values())
 
         #name - name dicts
@@ -123,6 +118,7 @@ class TGui:
         self.nutrition_names = all_recipes["Nutrition - Names"]
         self.intel_names = all_recipes["Intel - Names"]
         self.medstation_names = all_recipes["Medstation - Names"]
+        self.lavatory_names = all_recipes["Lavatory - Names"]
         self.scav_names = all_recipes["Scav - Names"]
 
         #misc
@@ -173,13 +169,10 @@ class TGui:
         self.insurance_checkbox.grid(column=0, row=18, padx=2.5, pady=5)
         self.flea_checkbox = tk.Checkbutton(self.root_window, text="Enable\nFlea Checks", variable=self.flea_checkbox_value, onvalue=1, offvalue=0)
         self.flea_checkbox.grid(column=0, row=19, padx=2.5, pady=5)
+        self.reboot_checkbox = tk.Checkbutton(self.root_window, text="Enable\nReboot Attempts", variable=self.reboot_checkbox_value, onvalue=1, offvalue=0)
+        self.reboot_checkbox.grid(column=0, row=20, padx=2.5, pady=5)
         self.time_label = tk.Label(self.root_window,font=("Arial Bold", 15))
-        self.time_label.grid(column=0, row=20, rowspan=2)
-        
-        self.start_label = tk.Label(self.root_window, font=("Arial", 10))
-        self.start_label.grid(column=0, row=23)
-        self.start_button = tk.Button(self.root_window, text="Start", command=self.startPressed, width=25, height=2, font=("Arial Bold", 12))
-        self.start_button.grid(column=0, row=24, padx=25, pady=(0, 10))
+        self.time_label.grid(column=3, row=21, rowspan=2)
         
         
         #COLUMN 1
@@ -204,6 +197,13 @@ class TGui:
         self.booze_label.grid(column=1, row=8)
         self.booze_entry = tk.Entry(self.root_window, textvariable=self.booze_count, width=20, highlightthickness=1, highlightbackground="black", highlightcolor="red")
         self.booze_entry.grid(column=1, row=9, padx=2.5, pady=5)
+        
+        self.scav_label = tk.Label(self.root_window, text="Scav", font=("Arial Bold", 8), borderwidth=2, relief="ridge")
+        self.scav_label.grid(column=1, row=11)
+        self.scav_menu = tk.OptionMenu(self.root_window, self.scav_value, *self.full_scav_names)
+        self.scav_menu.grid(column=1, row=12)
+        self.scav_entry = tk.Entry(self.root_window, textvariable=self.scav_count, width=20, highlightthickness=1, highlightbackground="black", highlightcolor="red")
+        self.scav_entry.grid(column=1, row=13, padx=2.5, pady=5) 
         
         
         #COLUMN 2
@@ -231,7 +231,7 @@ class TGui:
         
         self.lav_label = tk.Label(self.root_window, text="Lavatory", font=("Arial Bold", 8), borderwidth=2, relief="ridge")
         self.lav_label.grid(column=2, row=11)
-        self.lav_menu = tk.OptionMenu(self.root_window, self.lav_value, *self.preset_names)
+        self.lav_menu = tk.OptionMenu(self.root_window, self.lav_value, *self.full_lavatory_names)
         self.lav_menu.grid(column=2, row=12)
         self.lav_entry = tk.Entry(self.root_window, textvariable=self.lav_count, width=20, highlightthickness=1, highlightbackground="black", highlightcolor="red")
         self.lav_entry.grid(column=2, row=13, padx=2.5, pady=5)
@@ -243,13 +243,6 @@ class TGui:
         self.nutrition_entry = tk.Entry(self.root_window, textvariable=self.nutrition_count, width=20, highlightthickness=1, highlightbackground="black", highlightcolor="red")
         self.nutrition_entry.grid(column=2, row=16, padx=2.5, pady=5)
         
-        self.scav_label = tk.Label(self.root_window, text="Scav", font=("Arial Bold", 8), borderwidth=2, relief="ridge")
-        self.scav_label.grid(column=2, row=17)
-        self.scav_menu = tk.OptionMenu(self.root_window, self.scav_value, *self.full_scav_names)
-        self.scav_menu.grid(column=2, row=18)
-        self.scav_entry = tk.Entry(self.root_window, textvariable=self.scav_count, width=20, highlightthickness=1, highlightbackground="black", highlightcolor="red")
-        self.scav_entry.grid(column=2, row=19, padx=2.5, pady=5)
-        
         self._preset_label = tk.Label(self.root_window, text="Preset Name", font=("Arial Bold", 8))
         self._preset_label.grid(column=2, row=20, padx=2.5, pady=5)
         self._preset_label_2 = tk.Label(self.root_window, text="Leave blank to\nuse deafult", font=("Arial", 8))
@@ -259,9 +252,17 @@ class TGui:
         self._preset_save_button = tk.Button(self.root_window, text="Save", command=self.savePreset)
         self._preset_save_button.grid(column=2, row=23, padx=2.5, pady=2.5)
         
+        #COLUMN 3
+        
+        self.start_label = tk.Label(self.root_window, font=("Arial", 10))
+        self.start_label.grid(column=3, row=23)
+        self.start_button = tk.Button(self.root_window, text="Start", command=self.startPressed, width=25, height=2, font=("Arial Bold", 12))
+        self.start_button.grid(column=3, row=24, padx=25, pady=(0, 10))
+        
         
         self.root_window.mainloop()
         #call mainloop on class instance
+        
         
     def updateMenu(self, option_menu, new_full_list):
         #new_full_list should be a list
@@ -270,12 +271,16 @@ class TGui:
         for string in new_full_list:
             _menu.add_command(label=string, command=lambda value=string: self.main_preset_value.set(value))
     
+    
     def savePreset(self):
+        
+        #does not include quicksort, flea, or insurance values
+        
         self.var_to_node_name = {"workbench":(self.workbench_value.get(), self.workbench_count.get()), 
                                  "intel":(self.intel_value.get(), self.intel_count.get()),
                                  "nutrition":(self.nutrition_value.get(), self.nutrition_count.get()),
                                  "med":(self.med_value.get(), self.med_count.get()), 
-                                 # "lav":(self.lav_value, self.lav_count),
+                                  "lav":(self.lav_value.get(), self.lav_count.get()),
                                  "scav":(self.scav_value.get(), self.scav_count.get()), 
                                  "booze":self.booze_count.get(), 
                                  "water":self.water_count.get(), 
@@ -338,7 +343,6 @@ class TGui:
         os.chdir(self.root_path)
             
                 
-    
     def setPreset(self):
         
         if self.main_preset_value == "Select an Option...":
@@ -400,6 +404,7 @@ class TGui:
         # print(nodes_to_set)
         os.chdir(self.root_path)
         
+        
     def deletePreset(self):
 
         delete_text = "Are you sure you want to delete \"" + self.preset_menu["text"] + "\"?"
@@ -450,6 +455,7 @@ class TGui:
         except:
            return None
        
+        
     def nameCheck(self, value):
         value_inside = value
         if type(value_inside) != str:
@@ -458,6 +464,7 @@ class TGui:
             return str(value_inside)
         else:
             return None
+        
         
     def fullCheck(self):
         return_dict = {}
@@ -474,12 +481,13 @@ class TGui:
                 return_dict[name] = value_1
         return return_dict
        
+        
     def startPressed(self):
         self.var_to_node_name = {"workbench":(self.workbench_value.get(), self.workbench_count.get()), 
                                      "intel":(self.intel_value.get(), self.intel_count.get()),
                                      "nutrition":(self.nutrition_value.get(), self.nutrition_count.get()),
                                      "med":(self.med_value.get(), self.med_count.get()), 
-                                     # "lav":(self.lav_value.get(), self.lav_count.get()),
+                                     "lav":(self.lav_value.get(), self.lav_count.get()),
                                      "scav":(self.scav_value.get(), self.scav_count.get()), 
                                      "booze":self.booze_count.get(), 
                                      "water":self.water_count.get(), 
@@ -488,7 +496,10 @@ class TGui:
                                      "checkup":self.checkup_count.get(),
                                      "quicksort":self.quicksort_checkbox_value.get(),
                                      "flea":self.flea_checkbox_value.get(),
-                                     "insurance":self.insurance_checkbox_value.get()} 
+                                     "insurance":self.insurance_checkbox_value.get(),
+                                     "reboot":self.reboot_checkbox_value.get()} 
+        
+        print(self.var_to_node_name)
         
         if self.countCheck(self.time_count) == None or self.countCheck(self.checkup_count) == None:
             self.start_label["text"] = "Error: Time or checkup entry invalid. Must be int"
@@ -517,6 +528,11 @@ class TGui:
         else:
             self.start_return_dict["insurance"] = False
         
+        if self.var_to_node_name["reboot"] == 1:
+            self.start_return_dict["reboot"] = True
+        else:
+            self.start_return_dict["reboot"] = False
+            
         dict_string = ""
         for name, value in list(self.start_return_dict.items()):
             if name == "runtime" or name == "checkup":
@@ -542,7 +558,6 @@ class TGui:
             self.return_value = self.start_return_dict
             self.beginRun(self.return_value)
             
-        
         confirm_button = tk.Button(pop_up_window, text="CONFIRM", command=confirm, width=20, height=2)
         confirm_button.grid(column=0, row=2, padx=5, pady=(0, 5))
         
@@ -564,32 +579,30 @@ class TGui:
        
         self._kill = False
         
-        # self.exit_window = tk.Tk()
-        # self.exit_window.geometry("+1250+5")
-        
-        # def exitProgram():
-        #     self.exit_window.destroy()
-        #     self._kill = True
-        #     #KILL EFT HERE
-        #     #will need user to manually set eft installation path (exe not launcher)
-            
-            
-        # exit_button = tk.Button(self.exit_window, text="Exit", width=25, height=2, command=exitProgram, borderwidth=2, relief="ridge")
-        # exit_button.grid(row=0, column=0, padx=5, pady=2.5)
-        
-        # self.exit_window.lift()
-                
         my_orchestrator = Orchestrator(value_dict, self.root_path)
-        status = my_orchestrator.orchestrator()
+        status = None
+        if value_dict["reboot"] == True:
+            reboot_count = 0
+            while True:
+                status = my_orchestrator.orchestrator()
+                if status != "complete" and reboot_count <= 2:
+                    print("Resetting attempt: " + str(reboot_count +1))
+                    reboot_count += 1
+                    continue
+                elif status == "complete":
+                    break
+                elif reboot_count > 2:
+                    status = "FATAL"
+                    break
+        else:
+            status = my_orchestrator.orchestrator()
+            
         if status == "FATAL":
             print("Exiting program due to fatal error...")
             self._kill = True
         if status == "complete":
             print("Exiting program due to time completion...")
             self._kill = True
-        #May need to call orchestrator within new tkinter main loop, as i dont think it will get to it otherwise
-        #IDEA FOR EXIT KEY. BOOT HAPPENS, LOOKS FOR MAIN MENU. ONCE MAIN MENU FOUND, OPEN TKINTER WINDOW IN BOTTOM RIGHT, HAVE IT ALWAYS STAY ON SCREEN, MAKE EXIT KEY
-        # self.exit_window.mainloop()  
         
         if self._kill == True:
             self._kill == False

@@ -24,7 +24,6 @@ from time import sleep
 #  "lav":(recipe_name, run_count), "nutrition":(recipe_name, run_count), "scav":(recipe_name, run_count), 
 #  "booze":run_count (may be -1, which means run the whole time. same w others), "water":run_count,, 
 #  "generator":run_count (represents how many big cans to add throughout run. -1 means always keep filled w/ at least 1 tank), 
-#  "air":run_count (almost always gonna be 0),
 #  "runtime":runtime, "checkup":checkup }+
 
 class Orchestrator:
@@ -36,7 +35,7 @@ class Orchestrator:
         self.workbench_tuple = ("workbench",preset_dict["workbench"])
         self.intel_tuple = ("intel", preset_dict["intel"])
         self.med_tuple = ("med", preset_dict["med"])
-        # self.lav_tuple = ("lav", preset_dict["lav"])
+        self.lav_tuple = ("lav", preset_dict["lav"])
         self.nutrition_tuple = ("nutrition", preset_dict["nutrition"])
         #scav names are MOON, 950, 25, 150, INTEL
         self.scav_tuple = ("scav", preset_dict["scav"]) 
@@ -44,16 +43,17 @@ class Orchestrator:
         self.water_count = ("water",preset_dict["water"])
         self.booze_count = ("booze",preset_dict["booze"])
         self.generator_count = ("generator",preset_dict["generator"])
-        # self.air_count = ("air",preset_dict["air"])
         
         self.quicksort_bool = preset_dict["quicksort"]
         self.flea_bool = preset_dict["flea"]
         self.insurance_bool = preset_dict["insurance"]
+        self.reboot_bool = preset_dict["reboot"]
         
         #if runtime is not set, run count MUST be established for each item. no infinite unless runtime set to that
         self.runtime = preset_dict["runtime"]
         if self.runtime != -1:
             self.runtime = self.runtime * 900
+            print("RUNTIME: " + str(self.runtime))
         #increments of 15 min X checkup (15min = 900s)
         self.checkupFreq = preset_dict["checkup"]
         if self.checkupFreq == -1:
@@ -68,15 +68,17 @@ class Orchestrator:
         self.booze_runs = 0
         self.water_runs = 0
         self.generator_runs = 0
-        self.air_runs = 0
         self.btc_runs = 0
         self.quicksort_runs = 0
         self.flea_runs = 0
         self.insurance_runs = 0
+        self.reboot_runs = 0
         
         self.my_hideout = Hideout(self.root_path)
         self.my_checker = ErrorChecker()
         self.initial_epoch = time()
+        
+        self.repeat_epoch = self.initial_epoch
         
         
     def runWorkbench(self):
@@ -95,148 +97,102 @@ class Orchestrator:
         if self.intel_runs == self.intel_tuple[1][1]:
             print("Intel run count already reached...")
             return
-        try:
-            status = self.my_checker.errorChecker(self.my_hideout.makeRecipe, self.intel_tuple[1][0]) 
-            if status == "fail":
-                print("Error: Intel failure. Aborting attempt...")
-                return 'fail'
-            elif status == "FATAL":
-                return "FATAL"
-            self.intel_runs += 1
-        except:
-            print("Error: Fatal error while running intel")
+        status = self.my_checker.errorChecker(self.my_hideout.makeRecipe, self.intel_tuple[1][0]) 
+        if status == "fail":
+            print("Error: Intel failure. Aborting attempt...")
             return 'fail'
+        elif status == "FATAL":
+            return "FATAL"
+        self.intel_runs += 1
+
     
     def runMed(self):
         if self.med_runs == self.med_tuple[1][1]:
             print("Medstation run count already reached...")
             return
-        try:
-            status = self.my_checker.errorChecker(self.my_hideout.makeRecipe, self.med_tuple[1][0]) 
-            if status == "fail":
-                print("Error: Medstation failure. Aborting attempt...")
-                return 'fail'
-            elif status == "FATAL":
-                return "FATAL"
-            self.med_runs += 1
-        except:
-            print("Error: Fatal error while running medstation")
+        status = self.my_checker.errorChecker(self.my_hideout.makeRecipe, self.med_tuple[1][0]) 
+        if status == "fail":
+            print("Error: Medstation failure. Aborting attempt...")
             return 'fail'
+        elif status == "FATAL":
+            return "FATAL"
+        self.med_runs += 1
+        print("Error: Fatal error while running medstation")
+        return 'fail'
     
     def runLav(self):
         if self.lav_runs == self.lav_tuple[1][1]:
             print("Lavatory run count already reached...")
             return
-        try:
-            status = self.my_checker.errorChecker(self.my_hideout.makeRecipe, self.lav_tuple[1][0]) 
-            if status == "fail":
-                print("Error: Lavatory failure. Aborting attempt...")
-                return 'fail'
-            elif status == "FATAL":
-                return "FATAL"
-            self.lav_runs += 1
-        except:
-            print("Error: Fatal error while running lavatory")
+        status = self.my_checker.errorChecker(self.my_hideout.makeRecipe, self.lav_tuple[1][0]) 
+        if status == "fail":
+            print("Error: Lavatory failure. Aborting attempt...")
             return 'fail'
+        elif status == "FATAL":
+            return "FATAL"
+        self.lav_runs += 1
         
     def runNutrition(self):
         if self.nutrition_runs == self.nutrition_tuple[1][1]:
             print("Nutrition run count already reached...")
             return
-        try:
-            status = self.my_checker.errorChecker(self.my_hideout.makeRecipe, self.nutrition_tuple[1][0]) 
-            if status == "fail":
-                print("Error: Nutrition failure. Aborting attempt...")
-                return 'fail'
-            elif status == "FATAL":
-                return "FATAL"
-            self.nutrition_runs += 1
-        except:
-            print("Error: Fatal error while running nutrition")
+        status = self.my_checker.errorChecker(self.my_hideout.makeRecipe, self.nutrition_tuple[1][0]) 
+        if status == "fail":
+            print("Error: Nutrition failure. Aborting attempt...")
             return 'fail'
+        elif status == "FATAL":
+            return "FATAL"
+        self.nutrition_runs += 1
         
     def runScav(self):
         if self.scav_runs == self.scav_tuple[1][1]:
             print("Scav case run count already reached...")
             return
-        try:
-            status = self.my_checker.errorChecker(self.my_hideout.makeRecipe, self.scav_tuple[1][0]) 
-            if status == "fail":
-                print("Error: Scav Case failure. Aborting attempt...")
-                return 'fail'
-            elif status == "FATAL":
-                return "FATAL"
-            self.scav_runs += 1
-        except:
-            print("Error: Fatal error while running scav case")
+        status = self.my_checker.errorChecker(self.my_hideout.makeRecipe, self.scav_tuple[1][0]) 
+        if status == "fail":
+            print("Error: Scav Case failure. Aborting attempt...")
             return 'fail'
+        elif status == "FATAL":
+            return "FATAL"
+        self.scav_runs += 1
         
     def runWater(self):
         if self.water_runs == self.water_count[1]:
             print("Water run count already reached...")
             return
-        try:
-            status = self.my_checker.errorChecker(self.my_hideout.waterChecker) 
-            if status == "fail":
-                print("Error: Water failure. Aborting attempt...")
-                return 'fail'
-            elif status == "FATAL":
-                return "FATAL"
-            self.water_runs += 1
-        except:
-            print("Error: Fatal error while running water")
+        status = self.my_checker.errorChecker(self.my_hideout.waterChecker) 
+        if status == "fail":
+            print("Error: Water failure. Aborting attempt...")
             return 'fail'
+        elif status == "FATAL":
+            return "FATAL"
+        self.water_runs += 1
         
     def runBooze(self):
         if self.booze_runs == self.booze_count[1]:
             print("Booze run count already reached...")
             return
-        try:
-            status = self.my_checker.errorChecker(self.my_hideout.boozeChecker) 
-            if status == "fail":
-                print("Error: Booze failure. Aborting attempt...")
-                return 'fail'
-            elif status == "FATAL":
-                return "FATAL"
-            self.booze_runs += 1
-        except:
-            print("Error: Fatal error while running booze")
+        status = self.my_checker.errorChecker(self.my_hideout.boozeChecker) 
+        if status == "fail":
+            print("Error: Booze failure. Aborting attempt...")
             return 'fail'
+        elif status == "FATAL":
+            return "FATAL"
+        self.booze_runs += 1
         
     def runGenerator(self):
         if self.generator_runs == self.generator_count[1]:
             print("Generator run count already reached...")
             return
-        try:
-            status = self.my_checker.errorChecker(self.my_hideout.generatorChecker) 
-            if status == "fail":
-                print("Error: Generator failure. Aborting attempt...")
-                return 'fail'
-            elif status == "FATAL":
-                return "FATAL"
-            self.generator_runs += 1
-        except:
-            print("Error: Fatal error while running generator")
+        status = self.my_checker.errorChecker(self.my_hideout.generatorChecker) 
+        if status == "fail":
+            print("Error: Generator failure. Aborting attempt...")
             return 'fail'
-        
-    def runAir(self):
-        if self.air_runs == self.air_count[1]:
-            print("Air run count already reached...")
-            return
-        try:
-            status = self.my_checker.errorChecker(self.my_hideout.airChecker) 
-            if status == "fail":
-                print("Error: Air failure. Aborting attempt...")
-                return 'fail'
-            elif status == "FATAL":
-                return "FATAL"
-            self.air_runs += 1
-        except:
-            print("Error: Fatal error while running air")
-            return 'fail'
+        elif status == "FATAL":
+            return "FATAL"
+        self.generator_runs += 1
         
     def runBtc(self): 
-    # try:
         status = self.my_checker.errorChecker(self.my_hideout.btcChecker)
         if status == "fail":
             print("Error: BTC failure. Aborting attempt...")
@@ -244,12 +200,10 @@ class Orchestrator:
         elif status == "FATAL":
             return "FATAL"
         self.btc_runs += 1
-        # except:
-        #     print("Error: Fatal error while running BTC")
-        #     return 'fail'
         
     def runQuicksort(self):
-        status = self.my_checker.errorChecker(self.my_hideout.quickOrganizeInv)
+        status = self.my_checker.self.my_hideout.quickOrganizeInv()
+        #doesnt run 3 times 
         if status == "fail":
             print("Error: Quicksort failure. Aborting attempt...")
             return 'fail'
@@ -267,7 +221,7 @@ class Orchestrator:
         self.flea_runs += 1
         
     def runInsuranceClaim(self):
-        status = self.my_checker.errorChecker(self.my_hideout.claimInsurance)
+        status = self.my_hideout.errorChecker(self.claimInsurance)
         if status == "fail":
             print("Error: Insurance failure. Aborting attempt...")
             return 'fail'
@@ -276,7 +230,7 @@ class Orchestrator:
         self.insurance_runs += 1
         
     def runAll(self):
-        run_list = [self.workbench_tuple, self.intel_tuple, self.med_tuple, self.nutrition_tuple, self.scav_tuple, self.water_count, self.booze_count, self.generator_count]
+        run_list = [self.generator_count, self.workbench_tuple, self.intel_tuple, self.med_tuple, self.nutrition_tuple, self.lav_tuple, self.scav_tuple, self.water_count, self.booze_count]
         end_list = []
         for item in run_list: 
             if type(item[1]) == tuple:
@@ -315,7 +269,7 @@ class Orchestrator:
                 if status == "FATAL":
                     return "FATAL"
             elif item[0] == "lav":
-                self.runLav()
+                status = self.runLav()
                 if status == "FATAL":
                     return "FATAL"
             elif item[0] == "nutrition":
@@ -334,10 +288,6 @@ class Orchestrator:
                 status = self.runBooze()
                 if status == "FATAL":
                     return "FATAL"
-            elif item[0] == "air":
-                status = self.runAir()
-                if status == "FATAL":
-                    return "FATAL"
             else:
                 print("Error: Somehow incorrect node name??")
                 return 'fail'
@@ -351,14 +301,20 @@ class Orchestrator:
             if current_time - self.initial_epoch >= self.runtime and self.runtime != -1:
                 break
             #At this point, program assumes you are on tarkov fully loaded home page 
-            status = self.my_hideout.getAllItems()
-            if status == "FATAL":
-                return "FATAL"
+            # status = self.my_hideout.getAllItems()
+            # if status == "FATAL":
+            #     return "FATAL"
             status = self.runAll()
             if status == "FATAL":
                 return "FATAL"
             print("Run complete successfully")
-            sleep(900 * self.checkupFreq)
+            current_time = time()
+            if current_time - self.repeat_epoch >= 900 * self.checkupFreq:
+                print("ERROR: Program took more than wait interval to complete...")
+                return "FATAL"
+            
+            sleep(900 * self.checkupFreq - (current_time - self.initial_epoch))
+            self.repeat_epoch = time()
         return "complete"
     
     def grabTotalTime(self):

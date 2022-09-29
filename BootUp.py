@@ -31,7 +31,13 @@ class BootUp:
         
     def pressPlay(self):
         #Click "play"
-        pygui.click(x=1301, y=805, duration=1) 
+        os.chdir(self.submenu_path)
+        if pygui.locateOnScreen("Play_button.png", confidence=0.9) != None:
+            point_x, point_y = pygui.locateCenterOnScreen("Play_button.png", confidence=0.9)
+            pygui.click(x=point_x, y=point_y)
+        else:
+            print("Error: Tarkov launcher not found on screen")
+            return "fail"
         
     def checkForButtons(self):
         #checks if there are eft buttons on screen
@@ -42,6 +48,7 @@ class BootUp:
                 print("Main menu found")
                 return
             if i == 45:
+                #just clicks the middle of the screen to make eft the currently selected program
                 pygui.click(x=960, y=540)
                 continue
             if i > 90:

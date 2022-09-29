@@ -1,5 +1,0 @@
-2022-09-17 15:14:00.641 -06:00|0.12.12.31.19428|Info|application|Application awaken, updateQueue:'Update' 
-2022-09-17 15:14:00.651 -06:00|0.12.12.31.19428|Info|application|Assert.raiseExceptions:'True' 
-2022-09-17 15:14:00.651 -06:00|0.12.12.31.19428|Info|application|Application obfuscation succeed. 
-2022-09-17 15:14:02.571 -06:00|0.12.12.31.19428|Info|application|driveType:SSD swapDriveType:SSD 
-2022-09-17 15:14:02.939 -06:00|0.12.12.31.19428|Info|application|NVIDIA Reflex is available on this machine, Status: NvReflex_OK. 

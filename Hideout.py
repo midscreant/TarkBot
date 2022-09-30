@@ -163,18 +163,23 @@ class Hideout:
                 if node_name != "scav":
                     point_x, point_y = pygui.locateCenterOnScreen(claim,confidence=0.75)
                     pygui.click(x=point_x, y=point_y)
+                    if pygui.locateOnScreen("NoSpaceHideout_status.png", confidence=0.9) != None:
+                        print("ERROR: No space for item. Killing run")
+                        #this should definitely kill
+                        return "FATAL"
                     print("Item claimed")
                     return
                 point_x, point_y = pygui.locateCenterOnScreen(claim,confidence=0.75)
                 pygui.click(x=point_x, y=point_y)
-                print("Item claimed")
+                print("Scav case claim attempt")
                 sleep(1)
                 if pygui.loacteCenterOnScreen("receive_claim.png", confidence=0.75) == None:
-                    print("Error: No room for scav items")
-                    return "fail"
+                    print("Error: No room for scav items. Killing run")
+                    #this may mean there's still room to run other stuff. this may not be fatal in future
+                    return "FATAL"
                 _point_x, _point_y = pygui.loacteCenterOnScreen("receive_claim.png", confidence=0.75)
                 pygui.click(x=_point_x, y=_point_y)
-                print("And received")
+                print("Scav case claimed and received")
                 return
             else:
                 continue
@@ -185,13 +190,14 @@ class Hideout:
         if self.goToMainMenu() == "FATAL":
             return "FATAL"
         
+        #USE LOCATE NODE
+        
         self.goToHideout()
         
         os.chdir(self.subnodes_path)
         dir_list = [f for f in os.listdir('.') if os.path.isfile(f) and '_subnode' in f]
         right_nodes = ["med", "nutrition", "booze", "water"]
         left_nodes = ["workbench", "intel", "lav", "btc"]
-        middle_nodes = ["scav"]
         total_nodes = ["med", "nutrition", "booze", "water","workbench", "intel", "lav", "btc","scav"]
         scroll_counts = {"med":37, "nutrition":32, "booze":0, "water":0, "workbench":130, "intel":20, "lav":55, "btc":0, "scav":7} 
         claimed_count = 0
@@ -227,7 +233,7 @@ class Hideout:
                     pygui.click(x=point_x, y=point_y)
                     node_found = True
                     sleep(0.5)
-            elif node in middle_nodes:
+            else:
                 self.hideoutReset()
                 node_complete_name = node+"Complete_subnode.png"
                 node_incomplete_name = node+"Incomplete_subnode.png"
@@ -248,16 +254,16 @@ class Hideout:
             else:
                 print("Error: Node not found in search..killing")
                 return "FATAL"
-            
+            os.chdir(self.submenu_path)
             if pygui.locateCenterOnScreen("production_status.png", confidence=0.8) != None:
                 #this means the node is still producing, so can't be claimed
                 print(node + " currently running. Does not need a check...")
                 continue
             
-            if pygui.locateCenterOnScreen("deadStart_status.png", confidence=0.85) == None and node != "water":
-                #this means that the node isn't running, so can be killed
-                print(node + " not running. Does not need a check...")
-                continue
+            # if pygui.locateCenterOnScreen("deadStart_status.png", confidence=0.85) == None and node != "water":
+            #     #this means that the node isn't running, so can be killed
+            #     print(node + " not running. Does not need a check...")
+            #     continue
             
             checker = False
             
@@ -270,7 +276,8 @@ class Hideout:
                     claimed_count += 1
                     checker = True
                     break
-            
+                if status == "FATAL":
+                    return "FATAL"
             if checker == True:
                 continue
             
@@ -538,10 +545,10 @@ class Hideout:
         #add
         #node names - "med", "nutrition", "workbench", "intel"
             #right left node list
-        right_nodes = ["heating", "library", "rest", "med", "nutrition", "booze", "water"]
+        right_nodes = [ "med", "nutrition", "booze", "water"]
         left_nodes = ["workbench", "intel", "lav", "btc"]
         middle_nodes = ["generator", "scav"]
-        os.chdir(self.nodes_path)
+        os.chdir(self.subnodes_path)
         file_list = [f for f in os.listdir('.') if os.path.isfile(f) and node_name in f.lower()]
         if node_name in right_nodes:
             self.hideoutMoveRight()
@@ -550,8 +557,8 @@ class Hideout:
         else:
             self.hideoutReset()
         for file in file_list:
-            if pygui.locateOnScreen(file, confidence=0.7) != None:
-                node_x, node_y = pygui.locateCenterOnScreen(file, confidence=0.7)
+            if pygui.locateOnScreen(file, confidence=0.625) != None:
+                node_x, node_y = pygui.locateCenterOnScreen(file, confidence=0.625)
                 pygui.click(x=node_x, y=node_y)
                 print(node_name + " found and clicked...")
                 sleep(1)

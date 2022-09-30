@@ -280,7 +280,7 @@ class TGui:
                                  "intel":(self.intel_value.get(), self.intel_count.get()),
                                  "nutrition":(self.nutrition_value.get(), self.nutrition_count.get()),
                                  "med":(self.med_value.get(), self.med_count.get()), 
-                                  "lav":(self.lav_value.get(), self.lav_count.get()),
+                                 "lav":(self.lav_value.get(), self.lav_count.get()),
                                  "scav":(self.scav_value.get(), self.scav_count.get()), 
                                  "booze":self.booze_count.get(), 
                                  "water":self.water_count.get(), 
@@ -382,6 +382,9 @@ class TGui:
         if "intel" in nodes_to_set.keys():
             self.intel_value.set(preset_dict["intel"][0])
             self.intel_count.set(int(preset_dict["intel"][1]))
+        if "lav" in nodes_to_set.keys():
+            self.lav_value.set(preset_dict["lav"][0])
+            self.lav_count.set(int(preset_dict["lav"][1]))
         if "med" in nodes_to_set.keys():
             self.med_value.set(preset_dict["med"][0])
             self.med_count.set(int(preset_dict["med"][1]))
@@ -581,21 +584,25 @@ class TGui:
         
         my_orchestrator = Orchestrator(value_dict, self.root_path)
         status = None
-        if value_dict["reboot"] == True:
-            reboot_count = 0
-            while True:
+        try:
+            #TEMP
+            if value_dict["reboot"] == True:
+                reboot_count = 0
+                while True:
+                    status = my_orchestrator.orchestrator()
+                    if status != "complete" and reboot_count <= 2:
+                        print("Resetting attempt: " + str(reboot_count +1))
+                        reboot_count += 1
+                        continue
+                    elif status == "complete":
+                        break
+                    elif reboot_count > 2:
+                        status = "FATAL"
+                        break
+            else:
                 status = my_orchestrator.orchestrator()
-                if status != "complete" and reboot_count <= 2:
-                    print("Resetting attempt: " + str(reboot_count +1))
-                    reboot_count += 1
-                    continue
-                elif status == "complete":
-                    break
-                elif reboot_count > 2:
-                    status = "FATAL"
-                    break
-        else:
-            status = my_orchestrator.orchestrator()
+        except:
+            status == "FATAL"
             
         if status == "FATAL":
             print("Exiting program due to fatal error...")

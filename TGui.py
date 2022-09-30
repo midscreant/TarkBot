@@ -46,7 +46,6 @@ class TGui:
                 self.preset_names.append(filename[:-4])
         if len(self.preset_names) == 0:
             self.preset_names.append("No presets found...")
-        print(self.preset_names)
             
         os.chdir(self.root_path)
             
@@ -502,8 +501,6 @@ class TGui:
                                      "insurance":self.insurance_checkbox_value.get(),
                                      "reboot":self.reboot_checkbox_value.get()} 
         
-        print(self.var_to_node_name)
-        
         if self.countCheck(self.time_count) == None or self.countCheck(self.checkup_count) == None:
             self.start_label["text"] = "Error: Time or checkup entry invalid. Must be int"
             return 'fail'
@@ -584,30 +581,29 @@ class TGui:
         
         my_orchestrator = Orchestrator(value_dict, self.root_path)
         status = None
-        try:
-            #TEMP
-            if value_dict["reboot"] == True:
-                reboot_count = 0
-                while True:
+        if value_dict["reboot"] == True:
+            reboot_count = 0
+            while True:
+                if reboot_count == 0:
                     status = my_orchestrator.orchestrator()
-                    if status != "complete" and reboot_count <= 2:
-                        print("Resetting attempt: " + str(reboot_count +1))
-                        reboot_count += 1
-                        continue
-                    elif status == "complete":
-                        break
-                    elif reboot_count > 2:
-                        status = "FATAL"
-                        break
-            else:
-                status = my_orchestrator.orchestrator()
-        except:
-            status == "FATAL"
+                else:
+                    status = my_orchestrator.orchestrator(status[1])
+                if status[1] == "kill":
+                    break
+                if reboot_count <= 2:
+                    print("Resetting attempt: " + str(reboot_count +1))
+                    reboot_count += 1
+                    continue
+                elif reboot_count > 2:
+                    status = ("FATAL", "kill")
+                    break
+        else:
+            status = my_orchestrator.orchestrator()
             
-        if status == "FATAL":
+        if status[0] == "FATAL":
             print("Exiting program due to fatal error...")
             self._kill = True
-        if status == "complete":
+        if status[0] == "complete":
             print("Exiting program due to time completion...")
             self._kill = True
         

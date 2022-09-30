@@ -157,6 +157,9 @@ class Hideout:
     def checkForClaim(self, node_name):
         os.chdir(self.submenu_path)
         #extension is _claim
+        if pygui.locateCenterOnScreen("StartStatus.png", confidence=0.9) != None:
+            #experimental
+            return "na"
         dir_list = [f for f in os.listdir('.') if os.path.isfile(f) and '_claim' in f]
         for claim in dir_list:
             if pygui.locateCenterOnScreen(claim, confidence=0.75) != None:
@@ -174,9 +177,7 @@ class Hideout:
                 print("Scav case claim attempt")
                 sleep(1)
                 if pygui.loacteCenterOnScreen("receive_claim.png", confidence=0.75) == None:
-                    print("Error: No room for scav items. Killing run")
-                    #this may mean there's still room to run other stuff. this may not be fatal in future
-                    return "FATAL"
+                    print("ERROR: No room for scav items. Continuing...")
                 _point_x, _point_y = pygui.loacteCenterOnScreen("receive_claim.png", confidence=0.75)
                 pygui.click(x=_point_x, y=_point_y)
                 print("Scav case claimed and received")
@@ -212,12 +213,12 @@ class Hideout:
                     point_x, point_y = pygui.locateCenterOnScreen(node_complete_name, confidence=0.625)
                     pygui.click(x=point_x, y=point_y)
                     node_found = True
-                    sleep(0.5)
+                    sleep(1)
                 elif pygui.locateCenterOnScreen(node_incomplete_name, confidence=0.625) != None:
                     point_x, point_y = pygui.locateCenterOnScreen(node_incomplete_name, confidence=0.625)
                     pygui.click(x=point_x, y=point_y)
                     node_found = True
-                    sleep(0.5)
+                    sleep(1)
             elif node in left_nodes:
                 self.hideoutMoveLeft()
                 node_complete_name = node+"Complete_subnode.png"
@@ -227,12 +228,12 @@ class Hideout:
                     point_x, point_y = pygui.locateCenterOnScreen(node_complete_name, confidence=0.625)
                     pygui.click(x=point_x, y=point_y)
                     node_found = True
-                    sleep(0.5)
+                    sleep(1)
                 elif pygui.locateCenterOnScreen(node_incomplete_name, confidence=0.625) != None:
                     point_x, point_y = pygui.locateCenterOnScreen(node_incomplete_name, confidence=0.625)
                     pygui.click(x=point_x, y=point_y)
                     node_found = True
-                    sleep(0.5)
+                    sleep(1)
             else:
                 self.hideoutReset()
                 node_complete_name = node+"Complete_subnode.png"
@@ -242,56 +243,54 @@ class Hideout:
                     point_x, point_y = pygui.locateCenterOnScreen(node_complete_name, confidence=0.625)
                     pygui.click(x=point_x, y=point_y)
                     node_found = True
-                    sleep(0.5)
+                    sleep(1)
                 elif pygui.locateCenterOnScreen(node_incomplete_name, confidence=0.625) != None:
                     point_x, point_y = pygui.locateCenterOnScreen(node_incomplete_name, confidence=0.625)
                     pygui.click(x=point_x, y=point_y)
                     node_found = True
-                    sleep(0.5)
+                    sleep(1)
             
             if node_found == True:
-                print(node + " identified and clicked")
+                print(node.capitalize() + " identified and clicked")
             else:
-                print("Error: Node not found in search..killing")
+                print("ERROR: Node not found in search..killing")
                 return "FATAL"
             os.chdir(self.submenu_path)
-            if pygui.locateCenterOnScreen("production_status.png", confidence=0.8) != None:
+            if pygui.locateCenterOnScreen("production_status.png", confidence=0.8) != None and node != "water":
                 #this means the node is still producing, so can't be claimed
-                print(node + " currently running. Does not need a check...")
+                print(node.capitalize() + " currently running. Does not need a check...")
                 continue
-            
-            # if pygui.locateCenterOnScreen("deadStart_status.png", confidence=0.85) == None and node != "water":
-            #     #this means that the node isn't running, so can be killed
-            #     print(node + " not running. Does not need a check...")
-            #     continue
             
             checker = False
             
             for i in range(scroll_counts[node]):
                 pygui.moveTo(x=1410, y=655)
                 pygui.scroll(-10)
-                status = self.checkForClaim(node)
-                if status == None:
-                    print("Item claimed for node " + node)
-                    claimed_count += 1
-                    checker = True
-                    break
-                if status == "FATAL":
-                    return "FATAL"
+                if i%3 == 0:
+                    status = self.checkForClaim(node)
+                    if status == None:
+                        print("Item claimed for node " + node.capitalize())
+                        claimed_count += 1
+                        checker = True
+                        break
+                    if status == "na":
+                        break
+                    if status == "FATAL":
+                        return "FATAL"
             if checker == True:
                 continue
             
             if scroll_counts[node] == 0:
                 status = self.checkForClaim(node)
                 if status == None:
-                    print("Item claimed for node " + node)
+                    print("Item claimed for node " + node.capitalize())
                     claimed_count += 1
                     continue
                 else:
-                    print("Nothing to grab from " + node)
+                    print("Nothing to grab from " + node.capitalize())
                     continue
                 
-            print("Nothing to grab from node " + node)
+            print("Nothing to grab from node " + node.capitalize())
                 
         print("Successfully grabbed " + str(claimed_count) + " item(s)")
         
@@ -308,11 +307,12 @@ class Hideout:
         pygui.click(x=1228, y=1066)
         sleep(1)
     
+    
     def startRecipe(self, item_pic_name, node_name=None):
         print(item_pic_name)
         if type(item_pic_name) == tuple:
             if node_name != None:
-                print("Error. Both tuple and node name")
+                print("ERROR. Both tuple and node name")
                 return 'fail' 
             item_pic_name_list = item_pic_name
             print(item_pic_name_list)
@@ -331,9 +331,9 @@ class Hideout:
         elif node_name.lower() == "lav":
             os.chdir(self.lavatory_recipes_path)
         else:
-            print("Error: Invalid node name...")
+            print("ERROR: Invalid node name...")
             return 'fail' 
-        item_loc = pygui.locateOnScreen(item_pic_name + "_recipe.png", confidence=0.925) 
+        item_loc = pygui.locateOnScreen(item_pic_name + "_recipe.png", confidence=0.825) 
         if item_loc != None:
             item_left_x = item_loc.left
             item_width = item_loc.width 
@@ -350,10 +350,10 @@ class Hideout:
             #successful start
                 return
             else:
-                print("Error 0003: No " + item_pic_name + " start found. Maybe a misclick") 
+                print("ERROR 0003: No " + item_pic_name + " start found. Maybe a misclick") 
                 return "fail" 
         else:
-            print("Error 0003: No " + item_pic_name + " start found") 
+            print("ERROR 0003: No " + item_pic_name + " start found") 
             return "fail" 
     
     
@@ -448,7 +448,7 @@ class Hideout:
         pygui.write(item_name, interval=0.2525)
         sleep(0.3)
         pygui.press('enter')
-        sleep(0.35)
+        sleep(1)
         #supposed to click Xs
         os.chdir(self.submenu_path)
         all_points = list(pygui.locateAllOnScreen("Exit_Option.png", confidence=0.9))
@@ -494,7 +494,9 @@ class Hideout:
                 _name = name[:-3]
             
             self.fleaMarketSearch(_name)
-            self.buyOnFlea(count, _name)        
+            status = self.buyOnFlea(count, _name)      
+            if status == "fail":
+                return "fail"
             sleep(1)    
      
         
@@ -525,11 +527,12 @@ class Hideout:
             _exit_count = 55
             os.chdir(self.lavatory_recipes_path)
         else:
-            print("Error: Invalid node name passed")
+            print("ERROR: Invalid node name passed")
             return 'fail'
         while _exit == False: 
-            if pygui.locateOnScreen(recipe_pic_name + "_recipe.png", confidence=0.9) != None: 
-                _exit = True
+            if _i%3 == 0:
+                if pygui.locateOnScreen(recipe_pic_name + "_recipe.png", confidence=0.825) != None: 
+                    _exit = True
             if _i > _exit_count:
                 print("No item found after " + str(_exit_count) + " attempts")
                 return 'fail'
@@ -556,11 +559,12 @@ class Hideout:
             self.hideoutMoveLeft()
         else:
             self.hideoutReset()
+        os.chdir(self.subnodes_path)
         for file in file_list:
             if pygui.locateOnScreen(file, confidence=0.625) != None:
                 node_x, node_y = pygui.locateCenterOnScreen(file, confidence=0.625)
                 pygui.click(x=node_x, y=node_y)
-                print(node_name + " found and clicked...")
+                print(node_name.capitalize() + " found and clicked")
                 sleep(1)
                 return True
         print("No node found. Could not click")
@@ -598,12 +602,12 @@ class Hideout:
                 recipe_pic_name = value
                 break
         if recipe_pic_name == " ":
-            print("Error: No recipe pic name grabbed") 
+            print("ERROR: No recipe pic name grabbed") 
             return 'fail'
         for name, value in list(dir_2.items()):
             if name == recipe_name: 
                 return ((name, value), recipe_pic_name)
-        print("Error: No recipe for " + recipe_name + " found") 
+        print("ERROR: No recipe for " + recipe_name + " found") 
         return 'fail'
         
    
@@ -615,7 +619,7 @@ class Hideout:
             if type(final_recipe_name) == str:
                 break
             if type(final_recipe_name) == None:
-                print("Error: None type not valid recipe")
+                print("ERROR: None type not valid recipe")
                 return 'fail'
             if type(recipe_name) == tuple and final_recipe_name == None:
                 final_recipe_name == recipe_name[0]
@@ -627,7 +631,7 @@ class Hideout:
                 final_recipe_name = final_recipe_name[0]
                 break
             else:
-                print("Error: No recipe name found after tuple dive")
+                print("ERROR: No recipe name found after tuple dive")
                 return 'fail'
         if final_recipe_name in list(self.full_workbench_recipes.keys()):
             node_name = "workbench"
@@ -643,24 +647,27 @@ class Hideout:
             node_name = "lav"
         else:
             print(final_recipe_name)
-            print("Error: Invalid recipe")
+            print("ERROR: Invalid recipe")
             pygui.press("esc")
             return 'fail'
  
-        #basic testing complete
-        #need to test confidence levels
-        #error checking is next big step
         if self.goToMainMenu() == "FATAL":
             return "FATAL"
         self.goToHideout() 
-        # node_located = self.locateNode(node_name) 
-        # if node_located == True:   
-            # sleep(1) 
-            # self.reusableExitLoop(recipe_name, node_name)
+        node_located = self.locateNode(node_name) 
+        if node_located == True:   
+            sleep(0.5)
+            os.chdir(self.submenu_path)
+            if pygui.locateCenterOnScreen("production_status.png", confidence=0.8) != None:
+                #this means the node is still producing, so can't be claimed
+                print(node_name + " currently running. Cannot run recipe")
+                return
         if node_name == "scav":
             scav_recipe_name, scav_pic_name = self.findRecipe(recipe_name, node_name)
             if scav_pic_name != "25" and scav_pic_name != "150" and scav_pic_name != "950":
-                self.checkAndBuyRecipe(scav_recipe_name)
+                status = self.checkAndBuyRecipe(scav_recipe_name)
+                if status == "fail":
+                    return "fail"
             self.goToHideout()
             _node_located = self.locateNode(node_name)
             if _node_located == True:
@@ -668,13 +675,15 @@ class Hideout:
                 self.startRecipe(scav_pic_name, node_name)
                 pygui.press("esc")
             else:
-                print("Error 0002: No node found. Exiting... ")
+                print("ERROR 0002: No node found. Exiting... ")
                 pygui.press("esc")
                 return "fail" 
         else:
             recipe_tuple, recipe_pic_name = self.findRecipe(recipe_name, node_name)
             _recipe_name, recipe_value = recipe_tuple 
-            self.checkAndBuyRecipe(recipe_value)  
+            status = self.checkAndBuyRecipe(recipe_value)  
+            if status == "fail":
+                return "fail"
             self.goToHideout()
             _node_located = self.locateNode(node_name)
             if _node_located == True:
@@ -682,7 +691,7 @@ class Hideout:
                 self.startRecipe(recipe_pic_name, node_name)
                 pygui.press("esc")
             else:
-                print("Error 0002: No node found. Exiting... 1 ")
+                print("ERROR 0002: No node found. Exiting... 1 ")
                 pygui.press("esc")
                 return "fail"
             
@@ -705,6 +714,7 @@ class Hideout:
         
         
     def clickMidRight(self, pic_name):
+        #deprecated
         try:
             first_loc = pygui.locateOnScreen(pic_name, confidence=0.9)
             #moving to mid left of button
@@ -717,7 +727,7 @@ class Hideout:
             print("Successfully clicked")
             sleep(0.25)
         except:
-            print("Error: Was not able to click mid left")
+            print("ERROR: Was not able to click mid left")
             return "fail"
         
         
@@ -779,7 +789,7 @@ class Hideout:
         self.locateNode('booze') 
         os.chdir(self.submenu_path)
         if pygui.locateOnScreen("StartStatus.png", confidence=0.9) == None:
-            print("Error 0009: No start found")
+            print("ERROR 0009: No start found")
             pygui.press("esc")
             return "fail"
         start_x, start_y = pygui.locateCenterOnScreen("StartStatus.png", confidence=0.9)
@@ -826,7 +836,7 @@ class Hideout:
                 pygui.click(x=point_x, y=point_y)
                 sleep(0.5)
                 if pygui.locateCenterOnScreen("none_gene.png", confidence=0.9) != None:
-                    print("Error. Didn't remove fuel")
+                    print("ERROR. Didn't remove fuel")
                     continue
                 print("Empty small fuel removed")
                 removed_count += 1
@@ -836,7 +846,7 @@ class Hideout:
                 pygui.click(x=point_x, y=point_y)
                 sleep(0.5)
                 if pygui.locateCenterOnScreen("none_gene.png", confidence=0.9) != None:
-                    print("Error. Didn't remove fuel")
+                    print("ERROR. Didn't remove fuel")
                     continue
                 print("Empty big fuel removed")
                 removed_count += 1
@@ -851,8 +861,15 @@ class Hideout:
             self.goToTraders()
             self.goToJaeger()
             pygui.moveTo(x=1621, y=587)
-            sleep(0.25)
+            sleep(1)
             scroll_count = 0
+            os.chdir()
+            if pygui.locateOnScreen("sell_button.png", confidence=0.9) == None:
+                print("ERROR: NO SELL BUTTON FOUND IN JAEGER")
+                return "FATAL"
+            point_x, point_y = pygui.locateCenterOnScreen("sell_button.png", confidence=0.9)
+            pygui.click(x=point_x, y=point_y)
+            sleep(0.5)
             for i in range(removed_count):
                 while True:
                     pygui.scroll(-10)
@@ -860,12 +877,12 @@ class Hideout:
                     if scroll_count > 125:
                         print("wasn't able to find all of the fuel")
                         return "FATAL"
-                    if pygui.locateOnScreen("SmallFuelEmptySale_gene.png", confidence=0.925) != None:
+                    if pygui.locateCenterOnScreen("SmallFuelEmptySale_gene.png", confidence=0.925) != None:
                         point_x, point_y =  pygui.locateCenterOnScreen("SmallFuelEmptySale_gene.png", confidence=0.925)
                         with pygui.hold("ctrl"):
                             pygui.click(x=point_x, y=point_y)
                         break
-                    elif pygui.locateOnScreen("BigFuelEmptySale_gene.png", confidence=0.925) != None:
+                    elif pygui.locateCenterOnScreen("BigFuelEmptySale_gene.png", confidence=0.925) != None:
                         point_x, point_y =  pygui.locateCenterOnScreen("BigFuelEmptySale_gene.png", confidence=0.925)
                         with pygui.hold("ctrl"):
                             pygui.click(x=point_x, y=point_y)
@@ -881,7 +898,7 @@ class Hideout:
             point_x, point_y = pygui.locateCenterOnScreen("geneBar_button.png", confidence=0.9)
             pygui.click(x=point_x, y=point_y)
         else:
-            print("Error: Can't find fuel load button")
+            print("ERROR: Can't find fuel load button")
             return "fail"
         
         if pygui.locateOnScreen("BigFuelLoader_gene.png", confidence=0.9) != None:
@@ -915,7 +932,7 @@ class Hideout:
                 point_x, point_y = pygui.locateCenterOnScreen("geneBar_button.png", confidence=0.9)
                 pygui.click(x=point_x, y=point_y)
             else:
-                print("Error: Can't find fuel load button")
+                print("ERROR: Can't find fuel load button")
                 return "fail"
             fuel_loc_x, fuel_loc_y = pygui.locateOnScreen("BigFuelFull_gene.png", confidence=0.9)
             pygui.click(x=fuel_loc_x, y=fuel_loc_y)
@@ -930,9 +947,10 @@ class Hideout:
         self.goToHideout() 
         #all checkers auto load and buy if empty 
         self.locateNode('water')
+        sleep(0.5)
         os.chdir(self.submenu_path)
         #if there's already a filter loaded, function ends
-        if pygui.locateOnScreen("Water_gene.png", confidence=0.9) == None:
+        if pygui.locateOnScreen("Water_gene.png", confidence=0.9) != None:
             print("Water filter currently loaded and running...")
             pygui.press("esc")
             return
@@ -940,7 +958,7 @@ class Hideout:
             point_x, point_y = pygui.locateCenterOnScreen("geneBar_button.png", confidence=0.9)
             pygui.click(x=point_x, y=point_y)
         else:
-            print("Error: Can't find fuel load button")
+            print("ERROR: Can't find fuel load button")
             return "fail"
         #if there's no water filters ready to be loaded, buy one on market
         if pygui.locateOnScreen("NoFuelLoader_gene.png", confidence=0.9) != None:
@@ -954,10 +972,10 @@ class Hideout:
                 point_x, point_y = pygui.locateCenterOnScreen("geneBar_button.png", confidence=0.9)
                 pygui.click(x=point_x, y=point_y)
             else:
-                print("Error: Can't find fuel load button")
+                print("ERROR: Can't find fuel load button")
                 return "fail"
             if pygui.locateOnScreen("WaterLoader_gene.png", confidence=0.9) == None:
-                print("Error 0006: Water func unknown failure")
+                print("ERROR 0006: Water func unknown failure")
                 pygui.press("esc")
                 return "fail"
             _water_x, _water_y = pygui.locateCenterOnScreen("Water_gene.png", confidence=0.9)
@@ -1022,7 +1040,7 @@ class Hideout:
             pygui.click(x=point_x, y=point_y)
             sleep(0.25)
         else:
-            print("Error. No messenger button found. Flea claim failed")
+            print("ERROR. No messenger button found. Flea claim failed")
             return "fail"
         
         
@@ -1037,7 +1055,7 @@ class Hideout:
                 sleep(0.25)
                 if pygui.locateCenterOnScreen("NoSpace_status.png", confidence=0.9) != None:
                     #this means you couldn't claim items
-                     print("No space to claim items. Fatal error")
+                     print("No space to claim items. Fatal ERROR")
                      return "FATAL"
                 sleep(0.5)
                 if pygui.locateCenterOnScreen("Accept_claim.png", confidence=0.9) != None:
@@ -1048,10 +1066,10 @@ class Hideout:
                     print("All flea items successfully claimed")
                     sleep(0.5)
                 else:
-                    print("Error: No Acceptance found. Bad bug")
+                    print("ERROR: No Acceptance found. Bad bug")
                     return "FATAL"
             else:
-                print("Error: 2nd receive button not found")
+                print("ERROR: 2nd receive button not found")
                 return "FATAL"
         else:
             sleep(0.5)
@@ -1075,14 +1093,14 @@ class Hideout:
             pygui.click(x=point_x, y=point_y)
             sleep(0.25)
         else:
-            print("Error: Ragman not found. Flea claim failed")
+            print("ERROR: Ragman not found. Flea claim failed")
             return "fail"
         
         status = self.checkReceive()
         if status == "fail":
             print("No flea items to claim")
         elif status == "FATAL":
-            print("Error:Flea claim Fatal error")
+            print("ERROR:Flea claim Fatal ERROR")
             return "FATAL"
 
     
@@ -1105,7 +1123,7 @@ class Hideout:
             pygui.click(x=point_x, y=point_y)
             sleep(0.25)
         else:
-            print("Error: Prapor not found. Flea claim failed")
+            print("ERROR: Prapor not found. Flea claim failed")
             return "fail"
         
         status_1 = self.checkReceive()
@@ -1126,7 +1144,7 @@ class Hideout:
             pygui.click(x=point_x, y=point_y)
             sleep(0.25)
         else:
-            print("Error: Therapist not found. Flea claim failed")
+            print("ERROR: Therapist not found. Flea claim failed")
             return "fail"
         
         status_2 = self.checkReceive()
@@ -1138,23 +1156,33 @@ class Hideout:
         else:
             print("Claimed items from Therapist")
             return
-           
-            
         
-        
-    #not used rn
-    def checkForPrompt(self, claim="yes"):
-        #checks for a prompt on screen. presses yes by default
-        if pygui.locateOnScreen("confirmation_status.png", confidence=0.9) != None and pygui.locateOnScreen("yesno_button.png", confidence=0.9) != None:
-            if claim == "yes":
-                point_x, point_y = pygui.locateCenterOnScreen("yes_button.png", confidence=0.9)
-                pygui.click(x=point_x, y=point_y)
-            elif claim == "no":
-                point_x, point_y = pygui.locateCenterOnScreen("no_button.png", confidence=0.9)
-                pygui.click(x=point_x, y=point_y)
-            else:
-                print("Error: Invalid claim input")
-                return
+    def checkForNoFuel(self):
+        if self.goToMainMenu() == "FATAL":
+            return "FATAL"
+        self.goToHideout()
+        self.locateNode("generator")
+        sleep(0.5)
+        os.chdir(self.submenu_path)
+        if pygui.locateOnScreen("NoFuel_status.png", confidence=0.9) == None:
+            pygui.press('esc')
+            return
+        print("Error: No fuel in generator post-generator check. Killing run")
+        return "FATAL"
+    
+    def geneOnCheck(self):
+        if self.goToMainMenu() == "FATAL":
+            return "FATAL"
+        self.goToHideout()
+        os.chdir(self.submenu_path)
+        if pygui.locateOnScreen("GeneOff_status.png", confidence=0.9) == None:
+            print("Generator already running")
+            return
+        point_x, point_y = pygui.locateCenterOnScreen("GeneOff_status.png", confidence=0.9)
+        pygui.click(x=point_x, y=point_y)
+        print("Turned generator on")
+        sleep(1)
+
         
         
 

@@ -20,7 +20,6 @@ class ErrorChecker:
         # else:
         status = function(*arguments)
         if status == "fail":
-            print("Unsuccessful attempt")
             return "fail"
         elif status == "FATAL":
             return "FATAL"

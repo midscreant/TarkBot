@@ -18,6 +18,8 @@ from Hideout import Hideout
 from ErrorChecker import ErrorChecker
 from time import time
 from time import sleep
+import pyautogui as pygui
+import os
     #-1 means the whole time
 
 # {"workbench":(recipe_name, run_count), "intel":(recipe_name, run_count), "med":(recipe_name, run_count), 
@@ -117,8 +119,6 @@ class Orchestrator:
         elif status == "FATAL":
             return "FATAL"
         self.med_runs += 1
-        print("Error: Fatal error while running medstation")
-        return 'fail'
     
     def runLav(self):
         if self.lav_runs == self.lav_tuple[1][1]:
@@ -202,7 +202,7 @@ class Orchestrator:
         self.btc_runs += 1
         
     def runQuicksort(self):
-        status = self.my_checker.self.my_hideout.quickOrganizeInv()
+        status = self.my_hideout.quickOrganizeInv()
         #doesnt run 3 times 
         if status == "fail":
             print("Error: Quicksort failure. Aborting attempt...")
@@ -229,93 +229,139 @@ class Orchestrator:
             return "FATAL"
         self.insurance_runs += 1
         
-    def runAll(self):
+    def runAll(self, reset_value=None):
+        _reset = reset_value
         run_list = [self.generator_count, self.workbench_tuple, self.intel_tuple, self.med_tuple, self.nutrition_tuple, self.lav_tuple, self.scav_tuple, self.water_count, self.booze_count]
         end_list = []
-        for item in run_list: 
+        for item in run_list:
             if type(item[1]) == tuple:
                 if item[1][0] != None and item[1][1] != None:
                     end_list.append(item)
             elif item[1] != None:
                 end_list.append(item)
                 
-        if self.quicksort_bool == True:
+        if self.quicksort_bool == True and (_reset == None or _reset == "quicksort"):
             if self.runQuicksort() == "FATAL":
-                return "FATAL"
-        if self.flea_bool == True:
+                return ("FATAL", "quicksort")
+            _reset = None
+        if self.flea_bool == True and (_reset == None or _reset == "flea"):
             if self.runFleaClaim() == "FATAL":
-                return "FATAL"
-        if self.insurance_bool == True:
+                return ("FATAL", "flea")
+            _reset = None
+        if self.insurance_bool == True and (_reset == None or _reset == "insurance"):
             if self.runInsuranceClaim() == "FATAL":
-                return "FATAL"
+                return ("FATAL", "insurance")
+            _reset = None
+        if _reset == None or _reset == "btc":
+            if self.runBtc() == "FATAL":
+                return ("FATAL", "btc")
+            _reset = None
             
-        if self.runBtc() == "FATAL":
-            return "FATAL"
+        self.my_hideout.geneOnCheck()
         for item in end_list:
-            if item[0] == "generator":
+            
+            if item[0] == "generator" and (_reset == None or _reset == "generator"):
                 status = self.runGenerator()
                 if status == "FATAL":
-                    return "FATAL"
-            elif item[0] == "workbench":
+                    return ("FATAL", "generator")
+                _reset = None
+            
+            elif self.my_hideout.checkForNoFuel() == "FATAL":
+                return ("FATAL", "kill")
+            
+            elif item[0] == "workbench" and (_reset == None or _reset == "workbench"):
                 status = self.runWorkbench()
                 if status == "FATAL":
-                    return "FATAL"
-            elif item[0] == "intel":
+                    return ("FATAL", "workbench")
+                _reset = None
+            elif item[0] == "intel" and (_reset == None or _reset == "intel"):
                 status = self.runIntel()
                 if status == "FATAL":
-                    return "FATAL"
-            elif item[0] == "med":
+                    return ("FATAL", "intel")
+                _reset = None
+            elif item[0] == "med" and (_reset == None or _reset == "med"):
                 status = self.runMed()
                 if status == "FATAL":
-                    return "FATAL"
-            elif item[0] == "lav":
-                status = self.runLav()
-                if status == "FATAL":
-                    return "FATAL"
-            elif item[0] == "nutrition":
+                    return ("FATAL", "med")
+                _reset = None
+            elif item[0] == "nutrition" and (_reset == None or _reset == "nutrition"):
                 status = self.runNutrition()
                 if status == "FATAL":
-                    return "FATAL"
-            elif item[0] == "scav":
+                    return ("FATAL", "nutrition")
+                _reset = None
+            elif item[0] == "lav" and (_reset == None or _reset == "lav"):
+                status = self.runLav()
+                if status == "FATAL":
+                    return ("FATAL", "lav")
+                _reset = None
+            elif item[0] == "scav" and (_reset == None or _reset == "scav"):
                 status = self.runScav()
                 if status == "FATAL":
-                    return "FATAL"
-            elif item[0] == "water":
+                    return ("FATAL", "scav")
+                _reset = None
+            elif item[0] == "water" and (_reset == None or _reset == "water"):
                 status = self.runWater()
                 if status == "FATAL":
-                    return "FATAL"
-            elif item[0] == "booze":
+                    return ("FATAL", "water")
+                _reset = None
+            elif item[0] == "booze" and (_reset == None or _reset == "booze"):
                 status = self.runBooze()
                 if status == "FATAL":
-                    return "FATAL"
+                    return ("FATAL", "booze")
+                _reset = None
             else:
                 print("Error: Somehow incorrect node name??")
-                return 'fail'
-            print("Ran " + item[0])
+                return ("FATAL", "kill")
+            print(item[0].capitalize() + " run complete")
+            print("\n")
+            print("++++++++++++++++++++++++++++++++")
             sleep(10)
             #GIVES 10 SEC BETWEEN EACH MAKE TO ALLOW FOR QUITTING
             
-    def orchestrator(self):
+    def orchestrator(self, reset_value=None):
+        _reset = reset_value
         while True:
             current_time = time()
             if current_time - self.initial_epoch >= self.runtime and self.runtime != -1:
                 break
             #At this point, program assumes you are on tarkov fully loaded home page 
-            status = self.my_hideout.getAllItems()
-            if status == "FATAL":
-                return "FATAL"
-            status = self.runAll()
-            if status == "FATAL":
-                return "FATAL"
-            print("Run complete successfully")
-            current_time = time()
-            if current_time - self.repeat_epoch >= 900 * self.checkupFreq:
-                print("ERROR: Program took more than wait interval to complete...")
-                return "FATAL"
-            
-            sleep(900 * self.checkupFreq - (current_time - self.initial_epoch))
-            self.repeat_epoch = time()
-        return "complete"
+            #if reset_value = getAll, don't need to change anything
+            if _reset == None or _reset == "getAll":
+                status = self.my_hideout.getAllItems() 
+                if status == "FATAL":
+                    return ("FATAL", "getAll")
+                status = self.runAll()
+                if status[0] == "FATAL":
+                    return status
+                current_time = time()
+                if current_time - self.repeat_epoch >= 900 * self.checkupFreq:
+                    print("ERROR: Program took more than wait interval to complete...")
+                    return ("FATAL", "kill")
+                
+                sleep_value = 900 * self.checkupFreq - (current_time - self.initial_epoch)
+                print("Loop complete. Time til next checkup: " + str(round(sleep_value, 2)) + "s")
+                print("+-+-+-+-+-+-+-+-+-+-+-+-+-")
+                sleep(sleep_value)
+                self.repeat_epoch = time()
+                
+            else:
+                status = self.runAll(reset_value=_reset)
+                if status[0] == "FATAL":
+                    return status
+                current_time = time()
+                if current_time - self.repeat_epoch >= 900 * self.checkupFreq:
+                    print("ERROR: Program took more than wait interval to complete...")
+                    return ("FATAL", "kill")
+                
+                sleep_value = 900 * self.checkupFreq - (current_time - self.initial_epoch)
+                print("Loop complete. Time til next checkup: " + str(round(sleep_value, 2)) + "s")
+                print("+-+-+-+-+-+-+-+-+-+-+-+-+-")
+                sleep(sleep_value)
+                self.repeat_epoch = time()
+                _reset = None
+                
+        return ("complete", "kill")
+    
     
     def grabTotalTime(self):
         current_time = time()

@@ -93,6 +93,8 @@ class Orchestrator:
             return 'fail'
         elif status == "FATAL":
             return "FATAL"
+        elif status == "buy_fail":
+            return "buy_fail"
         self.workbench_runs += 1
         
     def runIntel(self):
@@ -105,6 +107,8 @@ class Orchestrator:
             return 'fail'
         elif status == "FATAL":
             return "FATAL"
+        elif status == "buy_fail":
+            return "buy_fail"
         self.intel_runs += 1
 
     
@@ -118,6 +122,8 @@ class Orchestrator:
             return 'fail'
         elif status == "FATAL":
             return "FATAL"
+        elif status == "buy_fail":
+            return "buy_fail"
         self.med_runs += 1
     
     def runLav(self):
@@ -130,6 +136,8 @@ class Orchestrator:
             return 'fail'
         elif status == "FATAL":
             return "FATAL"
+        elif status == "buy_fail":
+            return "buy_fail"
         self.lav_runs += 1
         
     def runNutrition(self):
@@ -142,6 +150,8 @@ class Orchestrator:
             return 'fail'
         elif status == "FATAL":
             return "FATAL"
+        elif status == "buy_fail":
+            return "buy_fail"
         self.nutrition_runs += 1
         
     def runScav(self):
@@ -154,6 +164,8 @@ class Orchestrator:
             return 'fail'
         elif status == "FATAL":
             return "FATAL"
+        elif status == "buy_fail":
+            return "buy_fail"
         self.scav_runs += 1
         
     def runWater(self):
@@ -273,31 +285,43 @@ class Orchestrator:
                 status = self.runWorkbench()
                 if status == "FATAL":
                     return ("FATAL", "workbench")
+                elif status == "buy_fail":
+                    self.workbench_tuple[1][0] == None
                 _reset = None
             elif item[0] == "intel" and (_reset == None or _reset == "intel"):
                 status = self.runIntel()
                 if status == "FATAL":
                     return ("FATAL", "intel")
+                elif status == "buy_fail":
+                    self.intel_tuple[1][0] == None
                 _reset = None
             elif item[0] == "med" and (_reset == None or _reset == "med"):
                 status = self.runMed()
                 if status == "FATAL":
                     return ("FATAL", "med")
+                elif status == "buy_fail":
+                    self.med_tuple[1][0] == None
                 _reset = None
             elif item[0] == "nutrition" and (_reset == None or _reset == "nutrition"):
                 status = self.runNutrition()
                 if status == "FATAL":
                     return ("FATAL", "nutrition")
+                elif status == "buy_fail":
+                    self.nutrition_tuple[1][0] == None
                 _reset = None
             elif item[0] == "lav" and (_reset == None or _reset == "lav"):
                 status = self.runLav()
                 if status == "FATAL":
                     return ("FATAL", "lav")
+                elif status == "buy_fail":
+                    self.lav_tuple[1][0] == None
                 _reset = None
             elif item[0] == "scav" and (_reset == None or _reset == "scav"):
                 status = self.runScav()
                 if status == "FATAL":
                     return ("FATAL", "scav")
+                elif status == "buy_fail":
+                    self.scav_tuple[1][0] == None
                 _reset = None
             elif item[0] == "water" and (_reset == None or _reset == "water"):
                 status = self.runWater()

@@ -306,6 +306,14 @@ class Hideout:
     def bottomFlea(self):
         pygui.click(x=1228, y=1066)
         sleep(1)
+        
+    
+    def checkForNoMoney(self):
+        os.chdir(self.submenu_path)
+        if pygui.locateOnScreen("NotEnoughMoney_status.png", confidence=0.9) == None:
+            return
+        print("ERROR: Not enough money to continue to run bot")
+        return "FATAL"
     
     
     def startRecipe(self, item_pic_name, node_name=None):
@@ -357,11 +365,31 @@ class Hideout:
             return "fail" 
     
     
-    def buyAid(self, count=None, offset=None):
+    def buyAid(self, item_name, count=None, offset=None):
         #assumes you are on flea and at correct item, as does parent  
         #FIRST PURCHASE POINT (x=1761, y=179)
         #offset is an int for jumping down a certain count
-        if count != None: 
+        
+        if item_name.lower() == "water filter" or "fuel tank" in item_name.lower():
+            #offset not considered
+            if count == None:
+                #this means one 
+                status = self.buyFullContainer()
+                if status == "buy_fail":
+                    return "buy_fail"
+            _i = 0
+            while True:
+                
+                if _i == count:
+                    print("All full containers purchased")
+                    break
+                
+                status = self.buyFullContainer()
+                if status == "buy_fail":
+                    return "buy_fail"
+                _i += 1
+            
+        elif count != None: 
             if offset == None or offset == 0:
                 pygui.click(x=1761, y=179)
                 sleep(0.75)
@@ -381,17 +409,80 @@ class Hideout:
                 sleep(0.5)
                 pygui.press("y")
                 sleep(0.75) 
+                
         elif offset == None or offset == 0:
             pygui.click(x=1761, y=179)
             sleep(0.5)
             pygui.press("y")
             sleep(0.75)
+            
         else:
             pixel_offset = 72 * offset
             pygui.click(x=1762, y=179+pixel_offset)
             sleep(0.5)
             pygui.press("y")
             sleep(0.75)
+            
+        status = self.checkForNoMoney()
+        if status == "FATAL":
+            return "FATAL"
+            
+    def buyFullContainer(self):
+        
+        top = None
+        left = None
+        width = None
+        height = None
+        os.chdir(self.submenu_path)
+        if pygui.locateOnScreen("100100_status", confidence=0.9) != None:
+            left, top, width, height = pygui.locateOnScreen("100100_status.png", confidence=0.9)
+        elif pygui.locateOnScreen("6060_status", confidence=0.9) != None:
+            left, top, width, height = pygui.locateOnScreen("6060_status.png", confidence=0.9)
+        else:
+            while True:
+                _i = 0
+                show_more = False
+                
+                if pygui.locateCenterOnScreen("FleaRefresh_button.png",confidence=0.9) != None:
+                    point_x, point_y = pygui.locateCenterOnScreen("FleaRefresh_button.png",confidence=0.9)
+                    pygui.click(x=point_x, y=point_y)
+                else:
+                    print("ERROR: No refresh button found")
+                    
+                while True:
+                    if _i%2 == 0:
+                        if pygui.locateOnScreen("100100_status", confidence=0.9) != None:
+                            left, top, width, height = pygui.locateOnScreen("100100_status", confidence=0.9)
+                            break
+                        elif pygui.locateOnScreen("6060_status", confidence=0.9) != None:
+                            left, top, width, height = pygui.locateOnScreen("6060_status", confidence=0.9)
+                            break
+                            
+                    if pygui.locateCenterOnScreen("ShowMore_button.png", confidence=0.9) != None and show_more == False:
+                        point_x, point_y = pygui.locateCenterOnScreen("ShowMore_button.png", confidence=0.9)
+                        pygui.click(x=point_x, y=point_y)
+                        show_more = True
+                        sleep(0.25)
+                    
+                    elif show_more == True:
+                        print("ERROR: Went to new page but still no charged items. Buy Fail")
+                        return "buy_fail"
+                        
+                    pygui.moveTo(x=1410, y=655) 
+                    pygui.scroll(-10)
+                    _i += 1
+                
+                pos_x = left + 720
+                
+                pygui.click(x=pos_x, y=top)
+                sleep(0.5)
+                pygui.press('y')
+                sleep(0.75)
+                if pygui.locateOnScreen("PurchaseComplete_option.png", confidence=0.9) != None:
+                    return
+                print("Error: Purchase success not found")
+                return "buy_fail"
+        
        
         
     def buyOnFlea(self, count, item_name, offset=None):  
@@ -413,9 +504,17 @@ class Hideout:
                     print("ERROR: No refresh button found")
             if count > 3:
                 #moves to stack purchase
-                self.buyAid(count, offset)
+                status = self.buyAid(item_name, count, offset)
+                if status == "buy_fail":
+                    return "buy_fail"
+                elif status == "FATAL":
+                    return "FATAL"
             else:
-                self.buyAid(offset=offset) 
+                status = self.buyAid(item_name, offset=offset) 
+                if status == "buy_fail":
+                    return "buy_fail"
+                elif status == "FATAL":
+                    return "FATAL"
             if pygui.locateOnScreen("PurchaseComplete_option.png", confidence=0.7) != None:
                 _index += 1
                 if count > 3:
@@ -446,8 +545,6 @@ class Hideout:
         #click text box 
         pygui.click(x=258, y=121)
         pygui.write(item_name, interval=0.2525)
-        sleep(0.3)
-        pygui.press('enter')
         sleep(1)
         #supposed to click Xs
         os.chdir(self.submenu_path)
@@ -459,17 +556,36 @@ class Hideout:
             refreshed_points = list(pygui.locateAllOnScreen("Exit_Option.png", confidence=0.9))
             point_2x, point_2y = pygui.center(refreshed_points[1]) 
             pygui.click(x=point_2x, y=point_2y)
+            sleep(1.25)
+        else:
             sleep(1)
         #clicks item name on left
         if item_name.lower() == 'pliers' or item_name.lower() == 'screwdriver':
             #these items were problomatic so added extra check. position 3
             pygui.click(x=155, y=234)
-        elif 'm856' in item_name.lower() or 'm855' in item_name.lower():
+        elif 'm856' in item_name.lower() or 'm855' in item_name.lower() or "rechargeable" in item_name.lower():
             #these too. position 2
             pygui.click(x=218, y=196)
         else:    
             pygui.click(x=187, y=164)
         sleep(1)
+        
+    def checkIfAvailable(self):
+        #ASSUMES YOU ARE ON ITEM'S FLEA SCREEN
+        os.chdir(self.submenu_path)
+        if pygui.locateOnScreen("purchase_button.png", confidence=0.9) != None:
+            return
+        elif pygui.locateOnScreen("outOfStock_status.png", confidence=0.9) != None:
+            print("Item is out of stock. Skipping for now...")
+            return "OOS"
+        elif pygui.locateOnScreen("NoOffers_status.png", confidence=0.9) != None:
+            print("Item is either never sold or not currently in stock. Removing recipe from your list...")
+            return "fail"
+        elif pygui.locateOnScreen("locked_status.png", confidence=0.9) != None:
+            print("Item is locked. Either trader level inadequate, or quest not completed. Removing recipe from your list...")
+            return "fail"
+        print("No statuses found...FATAL")
+        return "FATAL"
         
         
     def checkAndBuyRecipe(self, recipe):
@@ -486,7 +602,18 @@ class Hideout:
         if type(recipe) != dict:
             #this means scav
             self.fleaMarketSearch(recipe)
-            self.buyOnFlea(1, recipe)
+            status = self.checkIfAvailable()
+            if status == "fail":
+                return "buy_fail"
+            elif status == "OOS":
+                return "OOS"
+            else:
+                return "FATAL"
+            status = self.buyOnFlea(1, recipe)
+            if status == "buy_fail":
+                return "buy_fail"
+            elif status == "FATAL":
+                return "FATAL"
             return
         for name, count in list(recipe.items()):
             _name = name
@@ -494,9 +621,20 @@ class Hideout:
                 _name = name[:-3]
             
             self.fleaMarketSearch(_name)
+            status = self.checkIfAvailable()
+            if status == "fail":
+                return "buy_fail"
+            elif status == "OOS":
+                return "OOS"
+            else:
+                return "FATAL"
             status = self.buyOnFlea(count, _name)      
             if status == "fail":
                 return "fail"
+            elif status == "buy_fail":
+                return "buy_fail"
+            elif status == "FATAL":
+                return "FATAL"
             sleep(1)    
      
         
@@ -668,6 +806,10 @@ class Hideout:
                 status = self.checkAndBuyRecipe(scav_recipe_name)
                 if status == "fail":
                     return "fail"
+                elif status == "buy_fail":
+                    return "buy_fail"
+                elif status == "FATAL":
+                    return "FATAL"
             self.goToHideout()
             _node_located = self.locateNode(node_name)
             if _node_located == True:
@@ -677,13 +819,17 @@ class Hideout:
             else:
                 print("ERROR 0002: No node found. Exiting... ")
                 pygui.press("esc")
-                return "fail" 
+                return "fail"   
         else:
             recipe_tuple, recipe_pic_name = self.findRecipe(recipe_name, node_name)
             _recipe_name, recipe_value = recipe_tuple 
             status = self.checkAndBuyRecipe(recipe_value)  
             if status == "fail":
                 return "fail"
+            elif status == "buy_fail":
+                return "buy_fail"
+            elif status == "FATAL":
+                return "FATAL"
             self.goToHideout()
             _node_located = self.locateNode(node_name)
             if _node_located == True:
@@ -831,7 +977,11 @@ class Hideout:
         removed_count = 0
         while True:
             if pygui.locateOnScreen("SmallNoFuel_gene.png", confidence=0.925) != None:
-                self.clickMidRight("SmallNoFuel_gene.png")
+                _left, _top, _width, _height = pygui.locateOnScreen("SmallNoFuel_gene.png", confidence=0.925)
+                x_coord = _left + (_width - 7)
+                y_coord = _top - 15
+                pygui.click(x=x_coord, y=y_coord)
+                sleep(0.2)
                 point_x, point_y = pygui.locateCenterOnScreen("none_gene.png", confidence=0.9)
                 pygui.click(x=point_x, y=point_y)
                 sleep(0.5)
@@ -841,7 +991,11 @@ class Hideout:
                 print("Empty small fuel removed")
                 removed_count += 1
             elif pygui.locateOnScreen("BigNoFuel_gene.png", confidence=0.925) != None:
-                self.clickMidRight("BigNoFuel_gene.png")
+                _left, _top, _width, _height = pygui.locateOnScreen("BigNoFuel_gene.png", confidence=0.925)
+                x_coord = _left + (_width - 7)
+                y_coord = _top - 15
+                pygui.click(x=x_coord, y=y_coord)
+                sleep(0.2)
                 point_x, point_y = pygui.locateCenterOnScreen("none_gene.png", confidence=0.9)
                 pygui.click(x=point_x, y=point_y)
                 sleep(0.5)
@@ -880,12 +1034,12 @@ class Hideout:
                     if pygui.locateCenterOnScreen("SmallFuelEmptySale_gene.png", confidence=0.925) != None:
                         point_x, point_y =  pygui.locateCenterOnScreen("SmallFuelEmptySale_gene.png", confidence=0.925)
                         with pygui.hold("ctrl"):
-                            pygui.click(x=point_x, y=point_y)
+                            pygui.click(x=point_x - 10, y=point_y - 20)
                         break
                     elif pygui.locateCenterOnScreen("BigFuelEmptySale_gene.png", confidence=0.925) != None:
                         point_x, point_y =  pygui.locateCenterOnScreen("BigFuelEmptySale_gene.png", confidence=0.925)
                         with pygui.hold("ctrl"):
-                            pygui.click(x=point_x, y=point_y)
+                            pygui.click(x=point_x - 10, y=point_y - 20)
                         break
             point_x, point_y = pygui.locateCenterOnScreen("deal_claim.png", confidence=0.925)
             pygui.click(point_x, point_y)

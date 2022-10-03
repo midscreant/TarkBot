@@ -26,5 +26,7 @@ import os
 
 
 
-os.chdir("C:\\Users\\vinch\\Desktop\\Photos")
-print(pytesseract.image_to_string(Image.open('tips_origins.png')))
+pytesseract.pytesseract.tesseract_cmd = r"C:\\Users\\vinch\\miniconda3\\Library\\bin\\tesseract"
+
+os.chdir("C:/Users/vinch/Desktop/Photos")
+print(pytesseract.image_to_string(Image.open(r'C:/Users/vinch/Desktop/Photos/tips_origins.png')))

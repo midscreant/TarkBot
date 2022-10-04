@@ -15,6 +15,7 @@ from time import sleep
 import os
 import psutil
 import ast
+import sys
 
 # import hashlib
 
@@ -72,7 +73,6 @@ class TGui:
         self.lav_value = tk.StringVar()
         self.nutrition_value = tk.StringVar()
         self.scav_value = tk.StringVar()
-        #OTHER THAN PRESET, VALUE HOLDS RECIPE NAME. CAN BE GIVEN DIRECTLY TO MAKE RECIPE
         
         self.quicksort_checkbox_value = tk.IntVar()
         self.flea_checkbox_value = tk.IntVar()
@@ -323,17 +323,6 @@ class TGui:
             with open(file_string, "x") as fp:
                 fp.write(str(return_dict))
                 
-        # main_hash = hashlib.md5(file_string.encode())
-        # print(main_hash.hexdigest())
-        # for file in self.preset_files:
-        #     second_hash = hashlib.md5(file.encode())
-        #     print(second_hash.hexdigest())
-        #     if main_hash.hexdigest() == second_hash.hexdigest():
-        #         os.remove(file_string)
-        #         print("Error: This exact preset already exists. Preset " + file)
-        #         self._preset_label_2["text"] = "Error: This exact preset\nalready exists\nPreset " + file
-        #         return 'fail'
-                
         print("New preset created: " + file_string)
         self._preset_label_2["text"] = "New preset created: " + file_string[:-4]
         self.preset_names.append(file_string[:-4])
@@ -350,7 +339,7 @@ class TGui:
             return
         
         preset_file = self.preset_menu["text"] + ".txt"
-        print(preset_file)
+        print("Setting " + preset_file)
         dict_string = ""
         os.chdir(self.presets_path)
         with open(preset_file, "r") as fp:
@@ -586,20 +575,42 @@ class TGui:
             reboot_count = 0
             while True:
                 if reboot_count == 0:
-                    status = my_orchestrator.orchestrator()
+                    try:
+                        status = my_orchestrator.orchestrator()
+                    except:
+                        if reboot_count > 2:
+                            e = sys.exc_info()[0]
+                            print("UNCLASSIFIED FATAL ERROR: " + str(e))
+                            status = ("FATAL", "kill")
+                            break
+                        e = sys.exc_info()[0]
+                        print("UNCLASSIFIED FATAL ERROR: " + str(e))
+                        reboot_count += 1
+                        print("REBOOT ATTEMPT: " + str(reboot_count))
                 else:
-                    status = my_orchestrator.orchestrator(status[1])
-                if status[1] == "kill":
-                    break
+                    try:
+                        status = my_orchestrator.orchestrator(status[1])
+                    except:
+                        e = sys.exc_info()[0]
+                        print("UNCLASSIFIED FATAL ERROR: " + str(e))
+                        status = ("FATAL", "kill")
+                        break
+                if type(status) == None:
+                    if status[1] == "kill":
+                        break
                 if reboot_count <= 2:
                     print("Resetting attempt: " + str(reboot_count +1))
                     reboot_count += 1
-                    continue
                 elif reboot_count > 2:
                     status = ("FATAL", "kill")
                     break
         else:
-            status = my_orchestrator.orchestrator()
+            try:
+                status = my_orchestrator.orchestrator()
+            except:
+                e = sys.exc_info()[0]
+                print("UNCLASSIFIED FATAL ERROR: " + str(e))
+                status = ("FATAL", "kill")
             
         if status[0] == "FATAL":
             print("Exiting program due to fatal error...")

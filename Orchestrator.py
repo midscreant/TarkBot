@@ -20,13 +20,6 @@ from time import time
 from time import sleep
 import pyautogui as pygui
 import os
-    #-1 means the whole time
-
-# {"workbench":(recipe_name, run_count), "intel":(recipe_name, run_count), "med":(recipe_name, run_count), 
-#  "lav":(recipe_name, run_count), "nutrition":(recipe_name, run_count), "scav":(recipe_name, run_count), 
-#  "booze":run_count (may be -1, which means run the whole time. same w others), "water":run_count,, 
-#  "generator":run_count (represents how many big cans to add throughout run. -1 means always keep filled w/ at least 1 tank), 
-#  "runtime":runtime, "checkup":checkup }+
 
 class Orchestrator:
     
@@ -51,12 +44,10 @@ class Orchestrator:
         self.insurance_bool = preset_dict["insurance"]
         self.reboot_bool = preset_dict["reboot"]
         
-        #if runtime is not set, run count MUST be established for each item. no infinite unless runtime set to that
         self.runtime = preset_dict["runtime"]
         if self.runtime != -1:
             self.runtime = self.runtime * 900
             print("RUNTIME: " + str(self.runtime))
-        #increments of 15 min X checkup (15min = 900s)
         self.checkupFreq = preset_dict["checkup"]
         if self.checkupFreq == -1:
             self.checkupFreq = 1
@@ -84,7 +75,7 @@ class Orchestrator:
         
         
     def runWorkbench(self):
-        if self.workbench_runs == self.workbench_tuple[1][1]:
+        if self.workbench_runs == self.workbench_tuple[1][1] and self.workbench_tuple[1][1] >= 0:
             print("Workbench run count already reached...")
             return
         status = self.my_checker.errorChecker(self.my_hideout.makeRecipe, self.workbench_tuple[1][0]) 
@@ -98,7 +89,7 @@ class Orchestrator:
         self.workbench_runs += 1
         
     def runIntel(self):
-        if self.intel_runs == self.intel_tuple[1][1]:
+        if self.intel_runs == self.intel_tuple[1][1] and self.intel_tuple[1][1] >= 0:
             print("Intel run count already reached...")
             return
         status = self.my_checker.errorChecker(self.my_hideout.makeRecipe, self.intel_tuple[1][0]) 
@@ -113,7 +104,7 @@ class Orchestrator:
 
     
     def runMed(self):
-        if self.med_runs == self.med_tuple[1][1]:
+        if self.med_runs == self.med_tuple[1][1] and self.med_tuple[1][1] >= 0:
             print("Medstation run count already reached...")
             return
         status = self.my_checker.errorChecker(self.my_hideout.makeRecipe, self.med_tuple[1][0]) 
@@ -127,7 +118,7 @@ class Orchestrator:
         self.med_runs += 1
     
     def runLav(self):
-        if self.lav_runs == self.lav_tuple[1][1]:
+        if self.lav_runs == self.lav_tuple[1][1] and self.lav_tuple[1][1] >= 0:
             print("Lavatory run count already reached...")
             return
         status = self.my_checker.errorChecker(self.my_hideout.makeRecipe, self.lav_tuple[1][0]) 
@@ -141,7 +132,7 @@ class Orchestrator:
         self.lav_runs += 1
         
     def runNutrition(self):
-        if self.nutrition_runs == self.nutrition_tuple[1][1]:
+        if self.nutrition_runs == self.nutrition_tuple[1][1] and self.nutrition_tuple[1][1] >= 0:
             print("Nutrition run count already reached...")
             return
         status = self.my_checker.errorChecker(self.my_hideout.makeRecipe, self.nutrition_tuple[1][0]) 
@@ -155,7 +146,7 @@ class Orchestrator:
         self.nutrition_runs += 1
         
     def runScav(self):
-        if self.scav_runs == self.scav_tuple[1][1]:
+        if self.scav_runs == self.scav_tuple[1][1] and self.scav_tuple[1][1] >= 0:
             print("Scav case run count already reached...")
             return
         status = self.my_checker.errorChecker(self.my_hideout.makeRecipe, self.scav_tuple[1][0]) 
@@ -169,7 +160,7 @@ class Orchestrator:
         self.scav_runs += 1
         
     def runWater(self):
-        if self.water_runs == self.water_count[1]:
+        if self.water_runs == self.water_count[1] and self.water_count[1] >= 0:
             print("Water run count already reached...")
             return
         status = self.my_checker.errorChecker(self.my_hideout.waterChecker) 
@@ -181,7 +172,7 @@ class Orchestrator:
         self.water_runs += 1
         
     def runBooze(self):
-        if self.booze_runs == self.booze_count[1]:
+        if self.booze_runs == self.booze_count[1] and self.booze_count[1] >= 0:
             print("Booze run count already reached...")
             return
         status = self.my_checker.errorChecker(self.my_hideout.boozeChecker) 
@@ -193,7 +184,7 @@ class Orchestrator:
         self.booze_runs += 1
         
     def runGenerator(self):
-        if self.generator_runs == self.generator_count[1]:
+        if self.generator_runs == self.generator_count[1] and self.generator_count[1] >= 0:
             print("Generator run count already reached...")
             return
         status = self.my_checker.errorChecker(self.my_hideout.generatorChecker) 
@@ -271,7 +262,6 @@ class Orchestrator:
             
         self.my_hideout.geneOnCheck()
         for item in end_list:
-            
             if item[0] == "generator" and (_reset == None or _reset == "generator"):
                 status = self.runGenerator()
                 if status == "FATAL":
@@ -279,6 +269,7 @@ class Orchestrator:
                 _reset = None
             
             elif self.my_hideout.checkForNoFuel() == "FATAL":
+                #maybe change to any node
                 return ("FATAL", "kill")
             
             elif item[0] == "workbench" and (_reset == None or _reset == "workbench"):
@@ -369,6 +360,9 @@ class Orchestrator:
                 self.repeat_epoch = time()
                 
             else:
+                if self.my_hideout.goToMainMenu() == "FATAL":
+                    print("Error: Was not able to reset orchestrator")
+                    return "FATAL"
                 status = self.runAll(reset_value=_reset)
                 if status[0] == "FATAL":
                     return status

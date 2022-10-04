@@ -26,7 +26,6 @@ class BootUp:
         self.submenu_path = os.path.join(self.icons_path, "Submenu_Options")
  
     def runExe(self):
-        #doesnt work
         subprocess.Popen(self.tarkov_path)
         
     def pressPlay(self):
@@ -37,10 +36,9 @@ class BootUp:
             pygui.click(x=point_x, y=point_y)
         else:
             print("Error: Tarkov launcher not found on screen")
-            return "fail"
+            return "FATAL"
         
     def checkForButtons(self):
-        #checks if there are eft buttons on screen
         os.chdir(self.submenu_path)
         i = 0
         while True:
@@ -48,12 +46,11 @@ class BootUp:
                 print("Main menu found")
                 return
             if i == 45:
-                #just clicks the middle of the screen to make eft the currently selected program
                 pygui.click(x=960, y=540)
                 continue
             if i > 90:
                 print("No buttons found after 90 sec")
-                return "fail"
+                return "FATAL"
             i += 1    
             sleep(1)    
             
@@ -63,10 +60,12 @@ class BootUp:
             return 'fail'
         self.runExe()
         sleep(7.5)
-        self.pressPlay()
+        status = self.pressPlay()
+        if status == "FATAL":
+            return "FATAL"
         main_menu = self.checkForButtons()
-        if main_menu == "fail":
-            return "fail"
+        if main_menu == "FATAL":
+            return "FATAL"
         return "success"
         
             

@@ -605,12 +605,12 @@ class TGui:
                     status = ("FATAL", "kill")
                     break
         else:
-            try:
+            # try:
                 status = my_orchestrator.orchestrator()
-            except:
-                e = sys.exc_info()[0]
-                print("UNCLASSIFIED FATAL ERROR: " + str(e))
-                status = ("FATAL", "kill")
+            # except:
+                # e = sys.exc_info()[0]
+                # print("UNCLASSIFIED FATAL ERROR: " + str(e))
+                # status = ("FATAL", "kill")
             
         if status[0] == "FATAL":
             print("Exiting program due to fatal error...")

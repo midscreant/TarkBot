@@ -75,7 +75,7 @@ class Orchestrator:
         
         
     def runWorkbench(self):
-        if self.workbench_runs == self.workbench_tuple[1][1] and self.workbench_tuple[1][1] >= 0:
+        if self.workbench_runs == self.workbench_tuple[1][1]:
             print("Workbench run count already reached...")
             return
         status = self.my_checker.errorChecker(self.my_hideout.makeRecipe, self.workbench_tuple[1][0]) 
@@ -89,7 +89,7 @@ class Orchestrator:
         self.workbench_runs += 1
         
     def runIntel(self):
-        if self.intel_runs == self.intel_tuple[1][1] and self.intel_tuple[1][1] >= 0:
+        if self.intel_runs == self.intel_tuple[1][1]:
             print("Intel run count already reached...")
             return
         status = self.my_checker.errorChecker(self.my_hideout.makeRecipe, self.intel_tuple[1][0]) 
@@ -104,7 +104,7 @@ class Orchestrator:
 
     
     def runMed(self):
-        if self.med_runs == self.med_tuple[1][1] and self.med_tuple[1][1] >= 0:
+        if self.med_runs == self.med_tuple[1][1]:
             print("Medstation run count already reached...")
             return
         status = self.my_checker.errorChecker(self.my_hideout.makeRecipe, self.med_tuple[1][0]) 
@@ -118,7 +118,7 @@ class Orchestrator:
         self.med_runs += 1
     
     def runLav(self):
-        if self.lav_runs == self.lav_tuple[1][1] and self.lav_tuple[1][1] >= 0:
+        if self.lav_runs == self.lav_tuple[1][1]:
             print("Lavatory run count already reached...")
             return
         status = self.my_checker.errorChecker(self.my_hideout.makeRecipe, self.lav_tuple[1][0]) 
@@ -132,7 +132,7 @@ class Orchestrator:
         self.lav_runs += 1
         
     def runNutrition(self):
-        if self.nutrition_runs == self.nutrition_tuple[1][1] and self.nutrition_tuple[1][1] >= 0:
+        if self.nutrition_runs == self.nutrition_tuple[1][1]:
             print("Nutrition run count already reached...")
             return
         status = self.my_checker.errorChecker(self.my_hideout.makeRecipe, self.nutrition_tuple[1][0]) 
@@ -146,7 +146,7 @@ class Orchestrator:
         self.nutrition_runs += 1
         
     def runScav(self):
-        if self.scav_runs == self.scav_tuple[1][1] and self.scav_tuple[1][1] >= 0:
+        if self.scav_runs == self.scav_tuple[1][1]:
             print("Scav case run count already reached...")
             return
         status = self.my_checker.errorChecker(self.my_hideout.makeRecipe, self.scav_tuple[1][0]) 
@@ -160,7 +160,7 @@ class Orchestrator:
         self.scav_runs += 1
         
     def runWater(self):
-        if self.water_runs == self.water_count[1] and self.water_count[1] >= 0:
+        if self.water_runs == self.water_count[1]:
             print("Water run count already reached...")
             return
         status = self.my_checker.errorChecker(self.my_hideout.waterChecker) 
@@ -255,18 +255,24 @@ class Orchestrator:
             if self.runInsuranceClaim() == "FATAL":
                 return ("FATAL", "insurance")
             _reset = None
-        if _reset == None or _reset == "btc":
-            if self.runBtc() == "FATAL":
-                return ("FATAL", "btc")
-            _reset = None
+        # if _reset == None or _reset == "btc":
+        #     if self.runBtc() == "FATAL":
+        #         return ("FATAL", "btc")
+        #     _reset = None
             
-        self.my_hideout.geneOnCheck()
+        
+            
+        # self.my_hideout.geneOnCheck()
         for item in end_list:
             if item[0] == "generator" and (_reset == None or _reset == "generator"):
                 status = self.runGenerator()
                 if status == "FATAL":
                     return ("FATAL", "generator")
                 _reset = None
+                self.generator_runs += 1
+                if self.my_hideout.checkForNoFuel() == "FATAL":
+                    #maybe change to any node
+                    return ("FATAL", "kill")
             
             elif self.my_hideout.checkForNoFuel() == "FATAL":
                 #maybe change to any node
@@ -332,6 +338,8 @@ class Orchestrator:
             print("++++++++++++++++++++++++++++++++")
             sleep(10)
             #GIVES 10 SEC BETWEEN EACH MAKE TO ALLOW FOR QUITTING
+        
+        return "success"
             
     def orchestrator(self, reset_value=None):
         _reset = reset_value
@@ -346,8 +354,8 @@ class Orchestrator:
                 if status == "FATAL":
                     return ("FATAL", "getAll")
                 status = self.runAll()
-                if status[0] == "FATAL":
-                    return status
+                if status != "success":
+                    return "FATAL"
                 current_time = time()
                 if current_time - self.repeat_epoch >= 900 * self.checkupFreq:
                     print("ERROR: Program took more than wait interval to complete...")
@@ -364,8 +372,8 @@ class Orchestrator:
                     print("Error: Was not able to reset orchestrator")
                     return "FATAL"
                 status = self.runAll(reset_value=_reset)
-                if status[0] == "FATAL":
-                    return status
+                if status != "success":
+                    return "FATAL"
                 current_time = time()
                 if current_time - self.repeat_epoch >= 900 * self.checkupFreq:
                     print("ERROR: Program took more than wait interval to complete...")

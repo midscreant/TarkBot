@@ -24,6 +24,8 @@ from time import sleep
 import cv2
 import os 
 from recipes___ import all_recipes
+import pytesseract
+from PIL import Image
 
 #CURRENT DEPENDENCIES
     #pyautogui, cv2
@@ -33,6 +35,8 @@ class Hideout:
     def __init__(self, base_path):
 
         self.base_path = base_path
+        #temp path
+        self.temp_path = os.path.join(self.base_path, "temp")
         #icons path
         self.icons_path = os.path.join(self.base_path, 'Icons')
         #nodes path
@@ -81,6 +85,11 @@ class Hideout:
         self.medstation_names = all_recipes["Medstation - Names"]
         self.scav_names = all_recipes["Scav - Names"]
         self.lavatory_names = all_recipes["Lavatory - Names"]
+        
+        #tesseract defs
+        pytesseract.pytesseract.tesseract_cmd = r"C:/Users/vinch/miniconda3/Library/bin/tesseract"
+        self.tessdata_dir_config = '--tessdata-dir "C:/Users/vinch/miniconda3/share/tessdata"'
+        self.strip_var = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*)(}{-_=+><\\/?'\";:][.\n "
         
     #<><><><><><><><><><><><><>
     #Simple Hideout Functions 
@@ -245,11 +254,76 @@ class Hideout:
             print("<---->")
                 
         print("Successfully grabbed " + str(claimed_count) + " item(s)")
-        
-        
-        
-        
     
+        
+    #<><><><><><><><><><><><><>
+    #TESSERACT Functions
+    #<><><><><><><><><><><><><>
+    
+    def checkStack(self):
+        #x 1005-1092 y 470-507
+        #check if any letters or symbols
+        os.chdir(self.temp_path)
+        pygui.screenshot("number_ss.png",region=(825,534,225,23))
+        sleep(0.2)
+        image_string = pytesseract.image_to_string(Image.open(r'number_ss.png'), config=self.tessdata_dir_config).strip(self.strip_var)
+        try:
+            os.remove("number_ss.png")
+        except:
+            print("ERROR: Couldn't delete image")
+            return "FATAL"
+        if len(image_string) == 0:
+            print("ERROR: No text recovered. Stack purchase failed")
+            return "FATAL"
+        try:
+            box_value = int(image_string)
+            #this is the amount you are ATTEMPTING to buy
+            return box_value
+        except ValueError:
+            print("ERROR: Corrupted data recovered from OCR. Killing...")
+            return "FATAL"
+            
+    def attemptStackPurchase(self, initial_count):
+        os.chdir(self.submenu_path)
+        if pygui.locateOnScreen("stackPartialBuy_status.png", confidence=0.9) == None and pygui.locateOnScreen("alreadyPurchased_status.png", confidence=0.85) == None:
+            print("Full stack successfully purchased")
+            return initial_count
+        elif pygui.locateOnScreen("stackPartialBuy_status.png", confidence=0.9) != None:
+            status = self.checkForNoMoney()
+            if status == "FATAL":
+                return "FATAL"
+            print("Bought part of the stack")
+            os.chdir(self.temp_path)
+            pygui.screenshot("partialBlock_ss.png",region=(825,492,327,55))
+            sleep(0.2)
+            image_string = pytesseract.image_to_string(Image.open(r'partialBlock_ss.png'), config=self.tessdata_dir_config).strip(self.strip_var)
+            try:
+                os.remove("partialBlock_ss.png")
+            except:
+                print("ERROR: Couldn't delete image")
+                return "FATAL"
+            split_list = image_string.split(" ")
+            int_list = []
+            for item in split_list:
+                try:
+                    int_value = int(item)
+                    int_list.append(int_value)
+                except:
+                    continue
+            if len(int_list) != 2:
+                print("ERROR: Not enough numbers were found on-screen")
+                return "FATAL"
+            amount_purchased = int_list[1]
+            pygui.press('esc')
+            return amount_purchased
+        elif pygui.locateOnScreen("alreadyPurchased_status.png", confidence=0.85) != None:
+            print("Failed to buy any. Retrying...")
+            return 0
+        else:
+            print("Unknown error")
+            return "FATAL"
+        
+        
  
     #<><><><><><><><><><><><><>
     #Active Hideout Functions
@@ -275,7 +349,6 @@ class Hideout:
     
     def startRecipe(self, item_pic_name, node_name=None):
         print(item_pic_name)
-        final_path = None
         if type(item_pic_name) == tuple:
             if node_name != None:
                 print("ERROR. Both tuple and node name")
@@ -285,26 +358,20 @@ class Hideout:
             node_name = item_pic_name_list[1] 
         if node_name.lower() == "med": 
             os.chdir(self.medstation_recipes_path)
-            final_path = self.medstation_recipes_path
         elif node_name.lower() == "intel": 
             os.chdir(self.intel_recipes_path)
-            final_path = self.intel_recipes_path
         elif node_name.lower() == "nutrition": 
             os.chdir(self.nutrition_recipes_path)
-            final_path = self.nutrition_recipes_path
         elif node_name.lower() == "workbench": 
             os.chdir(self.workbench_recipes_path)
-            final_path = self.workbench_recipes_path
         elif node_name.lower() == "scav": 
             os.chdir(self.scav_recipes_path)
-            final_path = self.scav_recipes_path
         elif node_name.lower() == "lav":
             os.chdir(self.lavatory_recipes_path)
-            final_path = self.lavatory_recipes_path
         else:
             print("ERROR: Invalid node name...")
             return 'fail' 
-        item_loc = pygui.locateOnScreen(item_pic_name + "_recipe.png", confidence=0.825) 
+        item_loc = pygui.locateOnScreen(item_pic_name + "_recipe.png", confidence=0.925) 
         if item_loc != None:
             item_left_x = item_loc.left
             item_width = item_loc.width 
@@ -319,13 +386,12 @@ class Hideout:
             if pygui.locateOnScreen("production_status.png", confidence=0.9) != None:
                 print("Recipe for " + item_pic_name + " successfully started") 
             #successful start
-                os.chdir(final_path)
                 return
             else:
-                print("ERROR 0003: No " + item_pic_name + " start found. Maybe a misclick") 
-                return "fail" 
+                print("Not able to start " + item_pic_name) 
+                return "fail"
         else:
-            print("ERROR 0003: No " + item_pic_name + " start found") 
+            print("ERROR 0003: No " + item_pic_name + " recipe found") 
             return "fail" 
     
     
@@ -361,8 +427,27 @@ class Hideout:
                 sleep(0.5)
                 pygui.write(str(count), interval=0.075)
                 sleep(0.5)
+                status = self.checkStack()
+                if status == "FATAL":
+                    return "FATAL"
+                if count == status:
+                    print("Attempting full stack purchase")
+                else:
+                    print("Attempting partial stack purchase of " + str(status))
                 pygui.press("y")
                 sleep(0.75)
+                _status = self.attemptStackPurchase(status)
+                revised_count = None
+                if _status == "FATAL":
+                    return "FATAL"
+                elif count >= status:
+                    sleep(0.75)
+                    return
+                else:
+                    revised_count = count - _status
+
+                self.buyAid(item_name, revised_count, offset)
+                
             else:    
                 pixel_offset = 72 * offset
                 pygui.click(x=1762, y=179+pixel_offset)
@@ -371,8 +456,26 @@ class Hideout:
                 sleep(0.5)
                 pygui.write(str(count), interval=0.075)
                 sleep(0.5)
+                status = self.checkStack()
+                if status == "FATAL":
+                    return "FATAL"
+                if count == status:
+                    print("Attempting full stack purchase")
+                else:
+                    print("Attempting partial stack purchase of " + str(status))
                 pygui.press("y")
-                sleep(0.75) 
+                sleep(0.75)
+                _status = self.attemptStackPurchase(status)
+                revised_count = None
+                if _status == "FATAL":
+                    return "FATAL"
+                elif count >= status:
+                    sleep(0.75)
+                    return
+                else:
+                    revised_count = count - _status
+
+                self.buyAid(item_name, revised_count, offset)
                 
         elif offset == None or offset == 0:
             pygui.click(x=1761, y=179)
@@ -390,6 +493,7 @@ class Hideout:
         status = self.checkForNoMoney()
         if status == "FATAL":
             return "FATAL"
+        
             
     def buyFullContainer(self):
         
@@ -464,6 +568,7 @@ class Hideout:
                 if pygui.locateCenterOnScreen("FleaRefresh_button.png",confidence=0.9) != None:
                     point_x, point_y = pygui.locateCenterOnScreen("FleaRefresh_button.png",confidence=0.9)
                     pygui.click(x=point_x, y=point_y)
+                    sleep(1)
                 else:
                     print("ERROR: No refresh button found")
             if count > 3:
@@ -529,7 +634,7 @@ class Hideout:
         if item_name.lower() == 'pliers' or item_name.lower() == 'screwdriver':
             #these items were problomatic so added extra check. position 3
             pygui.click(x=155, y=234)
-        elif 'm856' in item_name.lower() or 'm855' in item_name.lower() or "rechargeable" in item_name.lower():
+        elif 'm856' in item_name.lower() or 'm855' in item_name.lower() or "rechargeable" in item_name.lower() or "weapon parts" in item_name.lower():
             #these too. position 2
             pygui.click(x=218, y=196)
         else:    
@@ -610,9 +715,6 @@ class Hideout:
      
         
     def reusableExitLoop(self, item_name, node_name):
-        #item name is a string to a .png
-        #img should be of item + count and a side recipe item to confirm its at the right one
-        #NEED TO TEST SCROLL COUNT
         _exit = False
         _i = 0
         recipe_tuple, recipe_pic_name = self.findRecipe(item_name, node_name)
@@ -640,7 +742,7 @@ class Hideout:
             return 'fail'
         while _exit == False: 
             if _i%6 == 0:
-                if pygui.locateOnScreen(recipe_pic_name + "_recipe.png", confidence=0.825) != None: 
+                if pygui.locateOnScreen(recipe_pic_name + "_recipe.png", confidence=0.925) != None: 
                     _exit = True
             if _i > _exit_count:
                 print("No item found after " + str(_exit_count) + " attempts")
@@ -704,8 +806,11 @@ class Hideout:
             dir_1 = {}
             for name, value in list(self.scav_names.items()):
                 if value == recipe_name:
-                    return (value, name)
-            
+                    return (value, name) 
+        else:
+            print("invalid node name")
+            return "fail"
+        
         for name, value in list(dir_1.items()): 
             if name == recipe_name:
                 recipe_pic_name = value
@@ -718,35 +823,50 @@ class Hideout:
                 return ((name, value), recipe_pic_name)
         print("ERROR: No recipe for " + recipe_name + " found") 
         return 'fail'
+    
        
     def checkIngredientStatus(self, recipe_tuple, recipe_pic_name, node_name):
         #assumes you are in node
         #doesnt do this for scav
         recipe_name, recipe_value = recipe_tuple
         ingredient_count = len(recipe_value.keys())
-        
+        status = self.reusableExitLoop(recipe_name, node_name) 
+        if status == "fail":
+            return "FATAL"
         status = self.startRecipe(recipe_pic_name, node_name)
-        if status == None:
+        if status != "fail":
             print("No need for additional checks, recipe already started")
             return
-        if pygui.locateOnScreen(recipe_pic_name + "_recipe.png", confidence=0.9) == None:
+        if node_name.lower() == "med": 
+            os.chdir(self.medstation_recipes_path)
+        elif node_name.lower() == "intel": 
+            os.chdir(self.intel_recipes_path)
+        elif node_name.lower() == "nutrition": 
+            os.chdir(self.nutrition_recipes_path)
+        elif node_name.lower() == "workbench": 
+            os.chdir(self.workbench_recipes_path)
+        elif node_name.lower() == "scav": 
+            os.chdir(self.scav_recipes_path)
+        elif node_name.lower() == "lav":
+            os.chdir(self.lavatory_recipes_path)
+        else:
+            print("ERROR: Invalid node name...")
+            return 'fail' 
+        if pygui.locateOnScreen(recipe_pic_name + "_recipe.png", confidence=0.925) == None:
             print("ERROR: Unknown recipe error")
             return "FATAL"
-        recipe_directory = os.getcwd()
-        _left, _top, _width, _height = pygui.locateOnScreen(recipe_pic_name + "_recipe.png", confidence=0.9)
-        numbers_top = _top + 63
-        numbers_bottom = numbers_top + 31
+        sleep(1)
+        _left, _top, _width, _height = pygui.locateOnScreen(recipe_pic_name + "_recipe.png", confidence=0.925)
+        numbers_bottom = _top + 94
         check_bottom = numbers_bottom + 23
-        #numbers_bottom = X_top
         os.chdir(self.submenu_path)
-        raw_checks = list(pygui.locateAllOnScreen("Ready_option.png", confidence=0.9))
-        raw_xs = list(pygui.locateAllOnScreen("NotReady_option.png", confidence=0.9))
-        
+        raw_checks = list(pygui.locateAllOnScreen("Ready_option.png", confidence=0.95))
+        raw_xs = list(pygui.locateAllOnScreen("NotReady_option.png", confidence=0.95))
         _dict = {}
         _i = 0
         for check in raw_checks:
             _left, _top, _width, _height = check
-            if _top <= check_bottom + 3 and _top >= numbers_bottom - 3:  
+            if _top <= check_bottom + 3 and _top >= numbers_bottom - 3:
                 #this means its at valid coords
                 key = str(_i)
                 _dict[key] = ("check", check)
@@ -755,17 +875,17 @@ class Hideout:
             _left, _top, _width, _height = x
             if _top <= check_bottom + 3 and _top >= numbers_bottom - 3:
                 key = str(_i)
-                _dict[key] = ("x", check)
+                _dict[key] = ("x", x)
                 _i += 1
                 
         final_list = []
         for key, value in list(_dict.items()):
             value_name, value_tuple = value
-            final_list.append(value_tuple.left)
+            if value_tuple.left not in final_list:
+                final_list.append(value_tuple.left)
             
         final_list.sort()
-        #list of _left properties of locations ordered smallest X to largest X
-        
+        #list of top properties of locations ordered smallest X to largest X
         final_dict = {}
         _i = 0
         for coord in final_list:
@@ -779,7 +899,7 @@ class Hideout:
         if ingredient_count != len(final_dict.keys()):
             print("ERROR: Unable to properly make shopping list. Buying everything...")
             return "fail"
-                    
+        print('Final Recipe: ' + str(final_dict))            
         return final_dict
         #returns dict
             #{"position_key 0":"check", "position_key 1":"x", ...}
@@ -793,7 +913,7 @@ class Hideout:
         final_recipe_name = recipe_name
         while True:
             if type(final_recipe_name) == str:
-                break
+                break 
             if type(final_recipe_name) == None:
                 print("ERROR: None type not valid recipe")
                 return 'fail'
@@ -842,7 +962,7 @@ class Hideout:
         if node_name == "scav":
             scav_recipe_name, scav_pic_name = self.findRecipe(recipe_name, node_name)
             status = self.startRecipe(scav_pic_name, node_name)
-            if status == None:
+            if status != "fail":
                 return
             if scav_pic_name != "25" and scav_pic_name != "150" and scav_pic_name != "950":
                 status = self.checkAndBuyRecipe(scav_recipe_name)
@@ -863,7 +983,7 @@ class Hideout:
                 pygui.press("esc")
                 return "fail"   
         else:
-            recipe_tuple, recipe_pic_name = self.findRecipe(recipe_name, node_name)
+            recipe_tuple, recipe_pic_name = self.findRecipe(final_recipe_name, node_name)
             _recipe_name, recipe_value = recipe_tuple 
             editable_dict = recipe_value
             ingredient_dict = self.checkIngredientStatus(recipe_tuple, recipe_pic_name, node_name)
@@ -871,22 +991,19 @@ class Hideout:
                 return "FATAL"
             elif ingredient_dict == None:
                 return
-            elif len(ingredient_dict.keys()) != len(recipe_value.keys()):
-                print("ERROR: Ingredient length and recipe length do not match! Buying all items...")
-            else:
+            elif type(ingredient_dict) == dict:
+                keys = list(recipe_value.keys())
                 for key, value in list(ingredient_dict.items()):
                     if value == "x":
                         continue
-                    success = False
-                    keys = recipe_value.keys()
+                    print(keys)
                     for _key in keys:
-                        if value == "check" and int(key) == keys.index(_key):
-                            del editable_dict[key]
-                            success = True
-                    if success == False:
-                        print("ERROR: No matching indexes. Buying all...")
-                        break
-                    
+                        if int(key) == keys.index(_key):
+                            editable_dict.pop(_key)
+                            break
+            else:
+                print("ERROR: Buying all items...")
+                
             status = self.checkAndBuyRecipe(editable_dict)  
             if status == "fail":
                 return "fail"

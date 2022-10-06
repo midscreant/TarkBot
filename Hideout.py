@@ -1,35 +1,17 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Wed Sep 21 16:58:08 2022
 
-@author: vinch
-"""
+#HIDEOUT
 
-# -*- coding: utf-8 -*-
-"""
-Created on Fri Aug 26 13:22:17 2022
+from recipes___ import all_recipes
 
-@author: vinch
-""" 
-#Hideout v2
-
-#<><><><><><><><>
-#---------------
-#TarkovBotV2
-#---------------
-#<><><><><><><><>
- 
-import pyautogui as pygui
-from time import sleep 
 import cv2
 import os 
-from recipes___ import all_recipes
 import pytesseract
+import pyautogui as pygui
 from PIL import Image
-
-#CURRENT DEPENDENCIES
-    #pyautogui, cv2
+from time import sleep 
  
+
 class Hideout:
     
     def __init__(self, base_path):
@@ -87,9 +69,16 @@ class Hideout:
         self.lavatory_names = all_recipes["Lavatory - Names"]
         
         #tesseract defs
-        pytesseract.pytesseract.tesseract_cmd = r"C:/Users/vinch/miniconda3/Library/bin/tesseract"
-        self.tessdata_dir_config = '--tessdata-dir "C:/Users/vinch/miniconda3/share/tessdata"'
         self.strip_var = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*)(}{-_=+><\\/?'\";:][.\n "
+        self.tools_folder_path = os.path.join(self.base_path, "tools")
+        self.tesseract_folder_path = os.path.join(self.tools_folder_path, "tesseract")
+        self.tesseract_exe_path = os.path.join(self.tesseract_folder_path, "tesseract")
+    
+        self.share_folder_path = os.path.join(self.base_path, "share")
+        self.tessdata_path = os.path.join(self.share_folder_path, "tessdata")
+                
+        pytesseract.pytesseract.tesseract_cmd = self.tesseract_exe_path
+        self.tessdata_dir_config = '--tessdata-dir "'+self.tessdata_path+'"'
         
     #<><><><><><><><><><><><><>
     #Simple Hideout Functions 
@@ -135,7 +124,6 @@ class Hideout:
         sleep(0.5)
         
     def goToMainMenu(self):
-        #ADD CHECK FOR CONFIRMATION PROMPT AS THIS WONT WORK WHEN THOSE APPEAR
         sleep(1)
         pygui.click(x=0, y=500)
         sleep(0.2)
@@ -153,9 +141,11 @@ class Hideout:
         os.chdir(self.submenu_path)
         if pygui.locateOnScreen("MainMenu_block.png", confidence=0.9) == None:
             #MEANS YOU ARE NOT ON MAIN MENU SCREEN
-            print("FATAL ERROR: Not on home screen...")
+            print("FATAL ERROR: Not on home screen. Ending run...")
             return "FATAL"
-        print("On main menu")
+        print("-_-_-_-_-")
+        print("ON MAIN MENU: CONFIRMED")
+        print("_-_-_-_-_")
         sleep(0.3)
         
         
@@ -165,10 +155,6 @@ class Hideout:
     
     def checkForClaim(self, node_name):
         os.chdir(self.submenu_path)
-        #extension is _claim
-        # if pygui.locateCenterOnScreen("start_status.png", confidence=0.9) != None:
-        #     #experimental
-        #     return "na"
         dir_list = [f for f in os.listdir('.') if os.path.isfile(f) and '_claim' in f]
         for claim in dir_list:
             if pygui.locateCenterOnScreen(claim, confidence=0.75) != None:
@@ -176,21 +162,20 @@ class Hideout:
                     point_x, point_y = pygui.locateCenterOnScreen(claim,confidence=0.75)
                     pygui.click(x=point_x, y=point_y)
                     if pygui.locateOnScreen("NoSpaceHideout_status.png", confidence=0.9) != None:
-                        print("ERROR: No space for item. Killing run")
+                        print("ERROR: No space in inventory to claim item. Ending run...")
                         #this should definitely kill
                         return "FATAL"
-                    print("Item claimed")
+                    print("Item successfully claimed from " + node_name)
                     return
                 point_x, point_y = pygui.locateCenterOnScreen(claim,confidence=0.75)
                 pygui.click(x=point_x, y=point_y)
-                print("Scav case claim attempt")
                 sleep(1)
                 if pygui.locateCenterOnScreen("receive_claim.png", confidence=0.75) == None:
-                    print("ERROR: No room for scav items")
+                    print("ERROR: No space in inventory to claim scav items. Continuing run")
                     return
                 _point_x, _point_y = pygui.locateCenterOnScreen("receive_claim.png", confidence=0.75)
                 pygui.click(x=_point_x, y=_point_y)
-                print("Scav case claimed and received")
+                print("Items successfully claimed from the scav case")
                 return
             else:
                 continue
@@ -203,19 +188,19 @@ class Hideout:
         self.goToHideout()
         
         os.chdir(self.subnodes_path)
-        total_nodes = ["scav"] #"med", "nutrition", "booze", "water","workbench", "intel", "lav", "btc",
+        total_nodes = ["med", "nutrition", "booze", "water","workbench", "intel", "lav", "btc", "scav"] 
         scroll_counts = {"med":37, "nutrition":37, "booze":0, "water":0, "workbench":130, "intel":25, "lav":55, "btc":0, "scav":13}
         claimed_count = 0
         for node in total_nodes:
             node_found = self.locateNode(node)
             if node_found != True:
-                print("ERROR: Node not found in search..killing")
+                print("ERROR: Node not found. Ending run...")
                 return "FATAL"
             os.chdir(self.submenu_path)
             if (pygui.locateCenterOnScreen("production_status.png", confidence=0.8) != None and node != "water") or (pygui.locateCenterOnScreen("collecting_status.png", confidence=0.8) != None and node != "water"):
-                #this means the node is still producing, so can't be claimed
-                print(node.capitalize() + " currently running. Does not need a check...")
-                print("<---->")
+                #this means the node is still producing, so nothing to claim
+                print(node.capitalize() + " currently running. Nothing to claim")
+                print("<--------->")
                 continue
             
             checker = False
@@ -226,8 +211,7 @@ class Hideout:
                 if i%6 == 0:
                     status = self.checkForClaim(node)
                     if status == None:
-                        print("Item claimed for node " + node.capitalize())
-                        print("<---->")
+                        print("<--------->")
                         claimed_count += 1
                         checker = True
                         break
@@ -241,28 +225,24 @@ class Hideout:
             if scroll_counts[node] == 0:
                 status = self.checkForClaim(node)
                 if status == None:
-                    print("Item claimed for node " + node.capitalize())
-                    print("<---->")
+                    print("<--------->")
                     claimed_count += 1
                     continue
                 else:
-                    print("Nothing to grab from " + node.capitalize())
-                    print("<---->")
+                    print("<--------->")
                     continue
                 
-            print("Nothing to grab from node " + node.capitalize())
-            print("<---->")
+            print("Nothing to grab from " + node.capitalize())
+            print("<--------->")
                 
-        print("Successfully grabbed " + str(claimed_count) + " item(s)")
+        print("Claim check claimed " + str(claimed_count) + " item(s)")
     
         
     #<><><><><><><><><><><><><>
     #TESSERACT Functions
     #<><><><><><><><><><><><><>
-    
+        
     def checkStack(self):
-        #x 1005-1092 y 470-507
-        #check if any letters or symbols
         os.chdir(self.temp_path)
         pygui.screenshot("number_ss.png",region=(825,534,225,23))
         sleep(0.2)
@@ -270,29 +250,29 @@ class Hideout:
         try:
             os.remove("number_ss.png")
         except:
-            print("ERROR: Couldn't delete image")
+            print("ERROR: Couldn't delete image. Ending run...")
             return "FATAL"
         if len(image_string) == 0:
-            print("ERROR: No text recovered. Stack purchase failed")
+            print("ERROR: Null data recovered from OCR. Ending run...")
             return "FATAL"
         try:
             box_value = int(image_string)
-            #this is the amount you are ATTEMPTING to buy
+            #this is the actual amount written out in stack buy prompt
             return box_value
         except ValueError:
-            print("ERROR: Corrupted data recovered from OCR. Killing...")
+            print("ERROR: Corrupted data recovered from OCR. Ending run...")
             return "FATAL"
             
     def attemptStackPurchase(self, initial_count):
         os.chdir(self.submenu_path)
         if pygui.locateOnScreen("stackPartialBuy_status.png", confidence=0.9) == None and pygui.locateOnScreen("alreadyPurchased_status.png", confidence=0.85) == None:
-            print("Full stack successfully purchased")
+            print("Successfully purchased the full stack")
             return initial_count
         elif pygui.locateOnScreen("stackPartialBuy_status.png", confidence=0.9) != None:
             status = self.checkForNoMoney()
             if status == "FATAL":
                 return "FATAL"
-            print("Bought part of the stack")
+            print("Successfully purchased a partial stack")
             os.chdir(self.temp_path)
             pygui.screenshot("partialBlock_ss.png",region=(825,492,327,55))
             sleep(0.2)
@@ -300,7 +280,7 @@ class Hideout:
             try:
                 os.remove("partialBlock_ss.png")
             except:
-                print("ERROR: Couldn't delete image")
+                print("ERROR: Couldn't delete image. Ending run...")
                 return "FATAL"
             split_list = image_string.split(" ")
             int_list = []
@@ -311,16 +291,16 @@ class Hideout:
                 except:
                     continue
             if len(int_list) != 2:
-                print("ERROR: Not enough numbers were found on-screen")
+                print("ERROR: Not enough numbers found on-screen. Ending run...")
                 return "FATAL"
             amount_purchased = int_list[1]
             pygui.press('esc')
             return amount_purchased
         elif pygui.locateOnScreen("alreadyPurchased_status.png", confidence=0.85) != None:
-            print("Failed to buy any. Retrying...")
+            print("Failed to buy any of the stack. Retrying...")
             return 0
         else:
-            print("Unknown error")
+            print("ERROR: Unknown Fatal Error. Ending run...")
             return "FATAL"
         
         
@@ -332,7 +312,7 @@ class Hideout:
     def bottomFlea(self):
         os.chdir(self.submenu_path)
         if pygui.locateOnScreen("fleaMarket_button.png", confidence=0.9) == None:
-            print("ERROR: Flea market button not on screen")
+            print("ERROR: Flea market button not on screen. Ending run...")
             return "FATAL"
         point_x, point_y = pygui.locateCenterOnScreen("fleaMarket_button.png", confidence=0.9)
         pygui.click(x=point_x, y=point_y)
@@ -343,7 +323,7 @@ class Hideout:
         os.chdir(self.submenu_path)
         if pygui.locateOnScreen("NotEnoughMoney_status.png", confidence=0.9) == None:
             return
-        print("ERROR: Not enough money to continue to run bot")
+        print("ERROR: Not enough money to continue to run bot. Ending run...")
         return "FATAL"
     
     
@@ -351,7 +331,7 @@ class Hideout:
         print(item_pic_name)
         if type(item_pic_name) == tuple:
             if node_name != None:
-                print("ERROR. Both tuple and node name")
+                print("ERROR: Can't submit both tuple and node name")
                 return 'fail' 
             item_pic_name_list = item_pic_name
             item_pic_name = item_pic_name_list[0] 
@@ -369,7 +349,7 @@ class Hideout:
         elif node_name.lower() == "lav":
             os.chdir(self.lavatory_recipes_path)
         else:
-            print("ERROR: Invalid node name...")
+            print("ERROR: Invalid node name")
             return 'fail' 
         item_loc = pygui.locateOnScreen(item_pic_name + "_recipe.png", confidence=0.925) 
         if item_loc != None:
@@ -380,38 +360,36 @@ class Hideout:
             pygui.click(x=item_left_x + item_width + 72, y=item_y)
             sleep(0.25)
             pygui.press("y")
-            #Should add a confirmation check here
             sleep(2)
             os.chdir(self.submenu_path)
             if pygui.locateOnScreen("production_status.png", confidence=0.9) != None:
-                print("Recipe for " + item_pic_name + " successfully started") 
-            #successful start
+                print(item_pic_name + " recipe successfully started") 
                 return
             else:
-                print("Not able to start " + item_pic_name) 
+                print("Unable to start " + item_pic_name + " recipe") 
                 return "fail"
         else:
-            print("ERROR 0003: No " + item_pic_name + " recipe found") 
+            print("ERROR: No " + item_pic_name + " recipe found") 
             return "fail" 
     
     
     def buyAid(self, item_name, count=None, offset=None):
         #assumes you are on flea and at correct item, as does parent  
-        #FIRST PURCHASE POINT (x=1761, y=179)
-        #offset is an int for jumping down a certain count
+        #offset is an int for jumping down a certain count of purchase buttons
         
         if item_name.lower() == "water filter" or "fuel tank" in item_name.lower():
-            #offset not considered
             if count == None:
-                #this means one 
+                #For one filter/tank
                 status = self.buyFullContainer()
                 if status == "buy_fail":
                     return "buy_fail"
+                print("Purchased all containers (full)")
+                return
             _i = 0
             while True:
-                
+                #For multiple
                 if _i == count:
-                    print("All full containers purchased")
+                    print("Purchased all containers (full)")
                     break
                 
                 status = self.buyFullContainer()
@@ -433,7 +411,7 @@ class Hideout:
                 if count == status:
                     print("Attempting full stack purchase")
                 else:
-                    print("Attempting partial stack purchase of " + str(status))
+                    print("Attempting purchase of " + str(status) + " out of " + str(count))
                 pygui.press("y")
                 sleep(0.75)
                 _status = self.attemptStackPurchase(status)
@@ -462,7 +440,7 @@ class Hideout:
                 if count == status:
                     print("Attempting full stack purchase")
                 else:
-                    print("Attempting partial stack purchase of " + str(status))
+                    print("Attempting purchase of " + str(status) + " out of " + str(count))
                 pygui.press("y")
                 sleep(0.75)
                 _status = self.attemptStackPurchase(status)
@@ -548,7 +526,7 @@ class Hideout:
                 sleep(0.75)
                 if pygui.locateOnScreen("PurchaseComplete_option.png", confidence=0.9) != None:
                     return
-                print("Error: Purchase success not found")
+                print("ERROR: Purchase success not found. Buy Fail")
                 return "buy_fail"
         
        
@@ -558,7 +536,6 @@ class Hideout:
         _z = 0 
         _exit = 0 
         if count > 5 and count <= 10:
-            #does extra attempts for more items
             _exit = 12
         else:
             _exit = 8 
@@ -587,7 +564,7 @@ class Hideout:
             if pygui.locateOnScreen("PurchaseComplete_option.png", confidence=0.7) != None:
                 _index += 1
                 if count > 3:
-                    print("Stack of "+str(count)+" "+item_name+"s successfully purchased...")
+                    print("Stack of "+str(count)+" "+item_name+"(s) successfully purchased")
                     return
                 else:
                     print("1 " +item_name+" purchased")
@@ -600,22 +577,21 @@ class Hideout:
                 print("All purchases failed")
             else:
                 end_count = count - _index
-                print(str(_index) + " successful purchases. " + str(end_count) + " failed.")
+                print(str(_index) + " successful purchases. " + str(end_count) + " failed")
             sleep(0.25)
             return "fail"
         else:
             sleep(0.25)
-            print("All "  + str(count) + " " + item_name + "(s) bought")       
+            print("All "  + str(count) + " " + item_name + "(s) successfully purchased")       
  
     
     def fleaMarketSearch(self, item_name):
         #assumes you are already on the flea
         #assumes you already have a specific item selected 
-        #click text box 
         pygui.click(x=258, y=121)
         pygui.write(item_name, interval=0.2525)
         sleep(1)
-        #supposed to click Xs
+        #Click "x"s 
         os.chdir(self.submenu_path)
         all_points = list(pygui.locateAllOnScreen("Exit_Option.png", confidence=0.9))
         if len(all_points) == 3: 
@@ -647,21 +623,20 @@ class Hideout:
         if pygui.locateOnScreen("purchase_button.png", confidence=0.9) != None:
             return
         elif pygui.locateOnScreen("outOfStock_status.png", confidence=0.9) != None:
-            print("Item is out of stock. Skipping for now...")
+            print("ERROR: Item is out of stock. Skipping recipe for now")
             return "OOS"
         elif pygui.locateOnScreen("NoOffers_status.png", confidence=0.9) != None:
-            print("Item is either never sold or not currently in stock. Removing recipe from your list...")
+            print("ERROR: Item is either never sold or not currently in stock. Removing recipe from your list")
             return "fail"
         elif pygui.locateOnScreen("locked_status.png", confidence=0.9) != None:
-            print("Item is locked. Either trader level inadequate, or quest not completed. Removing recipe from your list...")
+            print("ERROR: Item is locked. Either trader level inadequate, or quest not completed. Removing recipe from your list")
             return "fail"
-        print("No statuses found...FATAL")
+        print("ERROR: No statuses found. Ending run...")
         return "FATAL"
         
         
     def checkAndBuyRecipe(self, recipe):
-        #EXPECTS YOU TO HAVE ALREADY MOVED TO IT ON SCREEN
-        #THIS IS THE BRUTE FORCE BUY. DOES NO CHECKS FOR CURRENT ITEM COUNT    
+        #EXPECTS YOU TO HAVE ALREADY MOVED TO IT ON SCREEN 
         #recipe {"ingredient_1":count, ...} 
         print("<><><><><><><><><><>")
         print("Shopping list ready")
@@ -745,7 +720,7 @@ class Hideout:
                 if pygui.locateOnScreen(recipe_pic_name + "_recipe.png", confidence=0.925) != None: 
                     _exit = True
             if _i > _exit_count:
-                print("No item found after " + str(_exit_count) + " attempts")
+                print("ERROR: No item found after " + str(_exit_count) + " attempts")
                 return 'fail'
             _i += 1
             pygui.moveTo(x=1410, y=655) 
@@ -756,9 +731,6 @@ class Hideout:
         if type(node_name) == tuple:
             node_name = str(node_name[0])
         self.goToHideout()
-        #add
-        #node names - "med", "nutrition", "workbench", "intel"
-            #right left node list
         right_nodes = [ "med", "nutrition", "booze", "water"]
         left_nodes = ["workbench", "intel", "lav", "btc"]
         middle_nodes = ["generator", "scav"]
@@ -778,12 +750,12 @@ class Hideout:
                 print(node_name.capitalize() + " found and clicked")
                 sleep(1)
                 return True
-        print("No node found. Could not click")
+        print("ERROR: " + node_name.capitalize() + " not found. Node location failure")
         return "fail"
     
     
     def findRecipe(self, recipe_name, node_name):
-        #returns tuple (recipe_dict, recipe_pic_name)
+        #returns tuple (recipe_dict, recipe_pic_name) or (recipe_tuple, recipe_pic_name)
         recipe_pic_name = " "
         dir_1 = " "
         dir_2 = " "
@@ -808,7 +780,7 @@ class Hideout:
                 if value == recipe_name:
                     return (value, name) 
         else:
-            print("invalid node name")
+            print("ERROR: Invalid node name")
             return "fail"
         
         for name, value in list(dir_1.items()): 
@@ -827,7 +799,6 @@ class Hideout:
        
     def checkIngredientStatus(self, recipe_tuple, recipe_pic_name, node_name):
         #assumes you are in node
-        #doesnt do this for scav
         recipe_name, recipe_value = recipe_tuple
         ingredient_count = len(recipe_value.keys())
         status = self.reusableExitLoop(recipe_name, node_name) 
@@ -835,7 +806,7 @@ class Hideout:
             return "FATAL"
         status = self.startRecipe(recipe_pic_name, node_name)
         if status != "fail":
-            print("No need for additional checks, recipe already started")
+            print(recipe_name + " recipe successfully started")
             return
         if node_name.lower() == "med": 
             os.chdir(self.medstation_recipes_path)
@@ -850,10 +821,10 @@ class Hideout:
         elif node_name.lower() == "lav":
             os.chdir(self.lavatory_recipes_path)
         else:
-            print("ERROR: Invalid node name...")
+            print("ERROR: Invalid node name")
             return 'fail' 
         if pygui.locateOnScreen(recipe_pic_name + "_recipe.png", confidence=0.925) == None:
-            print("ERROR: Unknown recipe error")
+            print("ERROR: Unknown recipe error. Ending run...")
             return "FATAL"
         sleep(1)
         _left, _top, _width, _height = pygui.locateOnScreen(recipe_pic_name + "_recipe.png", confidence=0.925)
@@ -897,7 +868,7 @@ class Hideout:
                     break
                 
         if ingredient_count != len(final_dict.keys()):
-            print("ERROR: Unable to properly make shopping list. Buying everything...")
+            print("ERROR: Unable to properly make shopping list. Buying full list")
             return "fail"
         print('Final Recipe: ' + str(final_dict))            
         return final_dict
@@ -908,7 +879,6 @@ class Hideout:
         
    
     def makeRecipe(self, recipe_name):
-        #separate scav funct
         node_name = ""
         final_recipe_name = recipe_name
         while True:
@@ -952,11 +922,10 @@ class Hideout:
         self.goToHideout() 
         node_located = self.locateNode(node_name) 
         if node_located == True:   
-            #PUT IT HERE
             sleep(0.5)
             os.chdir(self.submenu_path)
             if pygui.locateCenterOnScreen("production_status.png", confidence=0.8) != None:
-                #this means the node is still producing, so can't be claimed
+                #this means the node is still producing, so nothing to claim
                 print(node_name + " currently running. Cannot run recipe")
                 return
         if node_name == "scav":
@@ -979,7 +948,6 @@ class Hideout:
                 self.startRecipe(scav_pic_name, node_name)
                 pygui.press("esc")
             else:
-                print("ERROR 0002: No node found. Exiting... ")
                 pygui.press("esc")
                 return "fail"   
         else:
@@ -1002,7 +970,7 @@ class Hideout:
                             editable_dict.pop(_key)
                             break
             else:
-                print("ERROR: Buying all items...")
+                print("ERROR: Buying full list")
                 
             status = self.checkAndBuyRecipe(editable_dict)  
             if status == "fail":
@@ -1018,7 +986,6 @@ class Hideout:
                 self.startRecipe(recipe_pic_name, node_name)
                 pygui.press("esc")
             else:
-                print("ERROR 0002: No node found. Exiting... 1 ")
                 pygui.press("esc")
                 return "fail"
             
@@ -1049,7 +1016,7 @@ class Hideout:
         sleep(0.25)
         os.chdir(self.submenu_path)
         if pygui.locateOnScreen("sortFail_status.png",confidence=0.9) != None:
-            print("Failed to sort stash")
+            print("ERROR: Failed to sort stash")
             return "fail"
         else:
             print("Inventory successfully sorted")
@@ -1060,18 +1027,12 @@ class Hideout:
         if self.goToMainMenu() == "FATAL":
             return "FATAL"
         self.goToHideout() 
-        #NEEDS STATUS PICS 
         self.locateNode('booze')
         os.chdir(self.submenu_path) 
         if pygui.locateOnScreen("production_status.png", confidence=0.9) != None:
-            print("Booze currently being produced...")
+            print("Moonshine currently being produced. Cannot run")
             pygui.press("esc")
             return
-        #Need 5 pics: 0/1, 1/1, 0/2, 1/2, 2/2
-        #if 0/1, buy water
-        #if 0/2 buy 2 sugar
-        #if 1/2 buy 1 sugar
-        #start when set 
         superwater_count = 0
         if pygui.locateOnScreen("0-1Status.png", confidence=0.9) != None:
             superwater_count = 1  
@@ -1098,14 +1059,14 @@ class Hideout:
         self.locateNode('booze') 
         os.chdir(self.submenu_path)
         if pygui.locateOnScreen("start_status.png", confidence=0.9) == None:
-            print("ERROR 0009: No start found")
+            print("ERROR: No start found")
             pygui.press("esc")
             return "fail"
         start_x, start_y = pygui.locateCenterOnScreen("start_status.png", confidence=0.9)
         pygui.click(x=start_x, y=start_y)
         sleep(0.25)
         pygui.press('y')
-        print('Successfully began moonshine production...') 
+        print('Successfully began moonshine production') 
         sleep(0.25)
         pygui.press("esc")
     
@@ -1113,17 +1074,16 @@ class Hideout:
     def btcChecker(self):
         if self.goToMainMenu() == "FATAL":
             return "FATAL"
-        self.goToHideout() 
-        #deals with btc not graphics
+        self.goToHideout()
         self.locateNode('btc')
         os.chdir(self.submenu_path)
         if pygui.locateOnScreen("GetItemsStatus.png", confidence=0.9) != None:
             status_x, status_y = pygui.locateCenterOnScreen("GetItemsStatus.png", confidence=0.9)
             pygui.click(x=status_x, y=status_y)
-            print("Bitcoins claimed...")
+            print("Bitcoins claimed")
             pygui.press("esc")
             return
-        print('No bitcoins to be claimed...')
+        print('No bitcoins to be claimed')
         pygui.press("esc")
         
 
@@ -1131,7 +1091,7 @@ class Hideout:
         if self.goToMainMenu() == "FATAL":
             return "FATAL"
         self.goToHideout()
-        #Checks if generator has room for more fuel, adds or buys and adds if needed
+        #Checks if generator has enough fuel (2+ tanks), adds more if not. Buys fuel from jaeger if need be
         #generator images in submenu, _gene
         self.locateNode('generator')
         os.chdir(self.submenu_path) 
@@ -1147,7 +1107,7 @@ class Hideout:
             if type(small_fuel) != None:
                 count += len(small_fuel)
             if count >= 2:
-                print("Enough fuel already loaded. Skipping...")
+                print("Enough fuel already loaded. Skipping")
                 return
         while True:
             if pygui.locateOnScreen("SmallNoFuel_gene.png", confidence=0.925) != None:
@@ -1160,7 +1120,7 @@ class Hideout:
                 pygui.click(x=point_x, y=point_y)
                 sleep(0.5)
                 if pygui.locateCenterOnScreen("none_gene.png", confidence=0.9) != None:
-                    print("ERROR. Didn't remove fuel")
+                    print("ERROR: Didn't remove fuel")
                     continue
                 print("Empty small fuel removed")
                 removed_count += 1
@@ -1174,7 +1134,7 @@ class Hideout:
                 pygui.click(x=point_x, y=point_y)
                 sleep(0.5)
                 if pygui.locateCenterOnScreen("none_gene.png", confidence=0.9) != None:
-                    print("ERROR. Didn't remove fuel")
+                    print("ERROR: Didn't remove fuel")
                     continue
                 print("Empty big fuel removed")
                 removed_count += 1
@@ -1203,7 +1163,7 @@ class Hideout:
                     pygui.scroll(-10)
                     scroll_count += 1
                     if scroll_count > 125:
-                        print("wasn't able to find all of the fuel")
+                        print("ERROR: Wasn't able to find all of the fuel")
                         break
                     if pygui.locateCenterOnScreen("SmallFuelEmptySale_gene.png", confidence=0.925) != None:
                         point_x, point_y =  pygui.locateCenterOnScreen("SmallFuelEmptySale_gene.png", confidence=0.925)
@@ -1219,7 +1179,7 @@ class Hideout:
                 point_x, point_y = pygui.locateCenterOnScreen("deal_claim.png", confidence=0.925)
                 pygui.click(point_x, point_y)
             else:
-                print("No deal to be claimed. Fuel sale failed")
+                print("ERROR: No deal to be claimed. Fuel sale failed")
             if self.goToMainMenu() == "FATAL":
                 return "FATAL"
             self.goToHideout() 
@@ -1266,7 +1226,6 @@ class Hideout:
             sleep(0.25)
             pygui.press('y') 
             print("Large Fuel Successfully Purchased")
-            #can fail if sold out or not enough $. Add check
             sleep(1)
             self.locateNode('generator')
             os.chdir(self.submenu_path)
@@ -1278,6 +1237,9 @@ class Hideout:
             else:
                 print("ERROR: Can't find fuel load button")
                 return "fail"
+            if pygui.locateCenterOnScreen("BigFuelFull_gene.png", confidence=0.9) == None:
+                print("ERROR: Jaeger was sold out of fuel. No more fuel to load")
+                return
             fuel_loc_x, fuel_loc_y = pygui.locateCenterOnScreen("BigFuelFull_gene.png", confidence=0.9)
             pygui.click(x=fuel_loc_x, y=fuel_loc_y)
             print("Large Fuel Loaded")
@@ -1295,7 +1257,7 @@ class Hideout:
         os.chdir(self.submenu_path)
         #if there's already a filter loaded, function ends
         if pygui.locateOnScreen("Water_gene.png", confidence=0.9) != None:
-            print("Water filter currently loaded and running...")
+            print("Water filter currently loaded and running")
             pygui.press("esc")
             return
         if pygui.locateOnScreen("geneBar_button.png", confidence=0.9) != None:
@@ -1306,13 +1268,12 @@ class Hideout:
             return "fail"
         #if there's no water filters ready to be loaded, buy one on market
         if pygui.locateOnScreen("NoFuelLoader_gene.png", confidence=0.9) != None:
-            print("No spare water filters. Buying one from market...")
+            print("No spare water filters. Buying one from market")
             status = self.bottomFlea()
             if status == "FATAL":
                 return "FATAL"
             self.fleaMarketSearch("Water Filter")
-            #buys with an offset of 3 to try and prevent low count filters
-            self.buyOnFlea(1, "Water Filter", 8) 
+            self.buyOnFlea(1, "Water Filter") 
             self.locateNode('water')
             os.chdir(self.submenu_path)
             if pygui.locateOnScreen("geneBar_button.png", confidence=0.9) != None:
@@ -1322,27 +1283,28 @@ class Hideout:
                 print("ERROR: Can't find fuel load button")
                 return "fail"
             if pygui.locateOnScreen("WaterLoader_gene.png", confidence=0.9) == None:
-                print("ERROR 0006: Water func unknown failure")
+                print("ERROR: Water func unknown failure")
                 pygui.press("esc")
                 return "fail"
             _water_x, _water_y = pygui.locateCenterOnScreen("Water_gene.png", confidence=0.9)
             pygui.click(x=_water_x, y=_water_y)
-            print("Water filter from flea successfully added...")
+            print("Water filter from flea successfully added")
             sleep(0.25)
             pygui.press("esc")
         elif pygui.locateOnScreen("Water_gene.png", confidence=0.9) != None:
            _water_x, _water_y = pygui.locateCenterOnScreen("Water_gene.png", confidence=0.9)
            pygui.click(x=_water_x, y=_water_y)
-           print("Water filter from inv successfully added...")
+           print("Water filter from inv successfully added")
            sleep(0.25)
            pygui.press("esc")
            
            
     def gcardBuyAndAdd(self, count=1):
+        #Wrote this but never used it. May use when mobile support added
+        #buys a graphics card and adds it to btc farm 
         if self.goToMainMenu() == "FATAL":
             return "FATAL"
-        self.goToHideout() 
-        #buys a graphics card and adds it to btc farm 
+        self.goToHideout()  
         status = self.bottomFlea()
         if status == "FATAL":
             return "FATAL"
@@ -1365,7 +1327,7 @@ class Hideout:
             item_full_name = self.scav_names[item]
             if pygui.locateOnScreen(item + "_status.png", confidence=0.925) != None:
                 self.startRecipe(item, "scav")
-                print("Scav case started with " +item+ "...")
+                print("Scav case started with " + item)
                 return
             if item == "MOON" or item == "INTEL":   
                 status = self.bottomFlea()
@@ -1378,7 +1340,7 @@ class Hideout:
                 pygui.press("esc")
                 return
             else:
-                print("Not enough roubles to run " + item_full_name + " scav case")
+                print("ERROR: Not enough roubles to run " + item_full_name + " scav case")
                 return 'fail'
         else:
             print("ERROR: Invalid item passage")
@@ -1417,10 +1379,10 @@ class Hideout:
                     print("All flea items successfully claimed")
                     sleep(0.5)
                 else:
-                    print("ERROR: No Acceptance found. Bad bug")
+                    print("ERROR: No Acceptance found. Ending run...")
                     return "FATAL"
             else:
-                print("ERROR: 2nd receive button not found")
+                print("ERROR: 2nd receive button not found. Ending run...")
                 return "FATAL"
         else:
             sleep(0.5)
@@ -1451,7 +1413,7 @@ class Hideout:
         if status == "fail":
             print("No flea items to claim")
         elif status == "FATAL":
-            print("ERROR:Flea claim Fatal ERROR")
+            print("ERROR: Flea claim error. Ending run...")
             return "FATAL"
 
     
@@ -1518,7 +1480,7 @@ class Hideout:
         if pygui.locateOnScreen("NoFuel_status.png", confidence=0.9) == None:
             pygui.press('esc')
             return
-        print("Error: No fuel in generator post-generator check. Killing run")
+        print("ERROR: No fuel in generator post-generator check. Ending run...")
         return "FATAL"
     
     def geneOnCheck(self):
@@ -1533,13 +1495,3 @@ class Hideout:
         pygui.click(x=point_x, y=point_y)
         print("Turned generator on")
         sleep(1)
-
-        
-        
-
- 
- 
-                          
-        
-        
- 

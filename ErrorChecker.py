@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Sat Sep 17 16:50:30 2022
 
-@author: vinch
-"""
+#ERROR CHECKING
 
 class ErrorChecker:
     
@@ -29,4 +26,3 @@ class ErrorChecker:
                 return
         print("Function still failing after 3 attempts...")
         return 'fail'
-                

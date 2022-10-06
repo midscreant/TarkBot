@@ -1,17 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Mon Sep  5 17:55:05 2022
-
-@author: vinch
-"""
-
-#recipe_dicts
-
-
-#workbench_recipes = {item_name:{ingredient_1:count, ingredient_2, count...}, item_2_name...}
-    #if item can be created with 2 recipes, second name will end will end in -_-
-    
-    
+#RECIPES
 #<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 #workbench    
 
@@ -187,18 +175,8 @@ lavatory_3_recipes = {"Velocity Systems MPPV Multi-Purpose Patrol Vest":{"Sewing
                       "WARTECH TV-110 plate carrier rig":{"Sewing Kit":1, "Awl":1, "Ripstop Fabric":1, "WARTECH TV-109 + TV-106 chest rig":2, "NPP KlASS Korund-VM body armor":1},
                       "Body armor repair kit":{"Awl":1, "Sewing Kit":1, "Metal Cutting Scissors":1, "Aramid Fiber Fabric":10, "KEKTAPE Duct Tape":4, "Duct Tape":6, "FORT Defender-2 body armor":3, "BNTI Gzhel-K body armor":3} }
 
-
-
-
-
-
-
-
-#other
-#things like sugar, water bottles etc. also would fall under this, but for construction purposes, charge doesn't matter
-partial_items = ["Water Filter", "FP-100 Filter Absorber", "Metal Fuel Tank", "Expeditionary fuel tank"]
-scav_items = ["Intelligence folder", "\"Fierce Hatchling\" Moonshine"] 
-
+#<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+#image names
 
 new_workbench_names = {"7.62x39mm BP gzh":"762BP", 
             "9x18mm PM RG028 gzh":"918RG028",
@@ -357,8 +335,6 @@ new_scav_names = { "MOON":"\"Fierce Hatchling\" Moonshine" ,
                   "150":"15000 Rubles" ,
                   "25":"2500 Rubles" }
 
- 
-
 #<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 #all
 
@@ -373,7 +349,3 @@ all_recipes = {"Workbench":[workbench_1_recipes, workbench_2_recipes, workbench_
                "Medstation - Names":new_medstation_names,
                "Scav - Names":new_scav_names,
                "Lavatory - Names":new_lavatory_names} 
-
-
-
-

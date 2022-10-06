@@ -1,37 +1,25 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Fri Sep 16 14:10:43 2022
 
-@author: vinch
-"""
+#GUI
 
 from BootUp import BootUp
 from Orchestrator import Orchestrator
 from recipes___ import all_recipes
 
-import tkinter as tk
-from tkinter import filedialog as fd
-from time import sleep
 import os
 import psutil
 import ast
 import sys
+import tkinter as tk
+from time import sleep
+from tkinter import filedialog as fd
 
-# import hashlib
-
-# {"workbench":(workbench_value, workbench_count), "intel":(intel_value, intel_count), "med":(med_value, med_count), 
-#  "lav":(lav_value, lav_count), "nutrition":(nutrition_value, nutrition_count), "scav":(scav_value, scav_count), 
-#  "booze":booze_count (may be -1, which means run the whole time. same w others), "water":water_count, 
-#  "generator":generator_count (represents how many big cans to add throughout run. -1 means always keep filled w/ at least 1 tank),
-#  "runtime":time_count, "checkup":checkup_count }+
 
 class TGui:
     
     def __init__(self):
         
         self.root_path = os.getcwd()
-        # split_path = os.getcwd().split("\\\\")
-        # new_path = "\\\\".join(split_path[:-2])
         self.presets_path = os.path.join(self.root_path, "Presets")
         
         #INITIAL CREATION
@@ -160,7 +148,6 @@ class TGui:
             file_path = fd.askopenfilename(initialdir="/", title="Find bsglauncher.exe", filetypes=(("Executables (.exe)", "*.exe"),))
             self.path_space["text"] = file_path
             self.path_value = file_path
-            #in future, save this to a txt file as saved config
         self.select_button = tk.Button(self.root_window, text="Select file", width=10, command=selectFile)
         self.select_button.grid(column=0, row=16, padx=2.5, pady=5)
         self.quicksort_checkbox = tk.Checkbutton(self.root_window, text="Enable\nInventory Quicksort", variable=self.quicksort_checkbox_value, onvalue=1, offvalue=0)
@@ -261,11 +248,9 @@ class TGui:
         
         
         self.root_window.mainloop()
-        #call mainloop on class instance
         
         
     def updateMenu(self, option_menu, new_full_list):
-        #new_full_list should be a list
         _menu = option_menu["menu"]
         _menu.delete(0, "end")
         for string in new_full_list:
@@ -335,7 +320,7 @@ class TGui:
     def setPreset(self):
         
         if self.main_preset_value == "Select an Option...":
-            print("Error: No preset selected")
+            print("ERROR: No preset selected")
             return
         
         preset_file = self.preset_menu["text"] + ".txt"
@@ -347,7 +332,6 @@ class TGui:
                 dict_string = dict_string + line
                 
         preset_dict = ast.literal_eval(dict_string.strip())
-        # print(dict_string)
         
         #PRESET DICT STRUCTURE
             #{"name":preset_name, "runtime":count, "checkup":count, "path":path_to_launcher...}
@@ -393,7 +377,6 @@ class TGui:
         if "booze" in nodes_to_set.keys():
             self.booze_count.set(int(preset_dict["booze"]))
             
-        # print(nodes_to_set)
         os.chdir(self.root_path)
         
         
@@ -605,12 +588,12 @@ class TGui:
                     status = ("FATAL", "kill")
                     break
         else:
-            # try:
+            try:
                 status = my_orchestrator.orchestrator()
-            # except:
-                # e = sys.exc_info()[0]
-                # print("UNCLASSIFIED FATAL ERROR: " + str(e))
-                # status = ("FATAL", "kill")
+            except:
+                e = sys.exc_info()[0]
+                print("UNCLASSIFIED FATAL ERROR: " + str(e))
+                status = ("FATAL", "kill")
             
         if status[0] == "FATAL":
             print("Exiting program due to fatal error...")
@@ -630,18 +613,4 @@ class TGui:
                     proc.kill()
             
             print("All relevant processes killed")
-            print("End of script reached.\nAlloted time: "+str(round(total_time, 2))+" seconds.\nThank you for choosing TarkBot!")
-
-    
-
-my_gui = TGui()    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-            
+            print("End of script reached.\nAlloted time: "+str(round(total_time, 2))+" seconds.\nThank you for choosing TarkBot!")  

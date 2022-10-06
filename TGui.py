@@ -21,6 +21,8 @@ class TGui:
         
         self.root_path = os.getcwd()
         self.presets_path = os.path.join(self.root_path, "Presets")
+        if os.path.isdir(self.presets_path) == False:
+            os.mkdir(self.presets_path)
         
         #INITIAL CREATION
         self.root_window = tk.Tk()
@@ -290,6 +292,7 @@ class TGui:
             return 'fail'
                     
         return_dict = self.fullCheck()
+        file_string = None
         os.chdir(self.presets_path)
         file_list = [f for f in os.listdir('.') if os.path.isfile(f)]
         file_count = len(file_list)
@@ -307,7 +310,7 @@ class TGui:
             file_string = "Custom Preset " + str(file_count + 1) + ".txt"
             with open(file_string, "x") as fp:
                 fp.write(str(return_dict))
-                
+        
         print("New preset created: " + file_string)
         self._preset_label_2["text"] = "New preset created: " + file_string[:-4]
         self.preset_names.append(file_string[:-4])

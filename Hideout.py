@@ -19,6 +19,9 @@ class Hideout:
         self.base_path = base_path
         #temp path
         self.temp_path = os.path.join(self.base_path, "temp")
+        if os.path.isdir(self.temp_path) == False:
+            os.chdir(self.base_path)
+            os.mkdir(self.temp_path)
         #icons path
         self.icons_path = os.path.join(self.base_path, 'Icons')
         #nodes path

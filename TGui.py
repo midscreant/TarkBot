@@ -21,6 +21,7 @@ class TGui:
         
         self.root_path = os.getcwd()
         self.presets_path = os.path.join(self.root_path, "Presets")
+        os.chdir(self.root_path)
         if os.path.isdir(self.presets_path) == False:
             os.mkdir(self.presets_path)
         
@@ -247,6 +248,8 @@ class TGui:
         self.start_label.grid(column=3, row=23)
         self.start_button = tk.Button(self.root_window, text="Start", command=self.startPressed, width=25, height=2, font=("Arial Bold", 12))
         self.start_button.grid(column=3, row=24, padx=25, pady=(0, 10))
+        self.error_box = tk.Label(self.root_window)
+        self.error_box.grid(column=3, row=17, rowspan=5)
         
         
         self.root_window.mainloop()
@@ -583,33 +586,42 @@ class TGui:
                         break
                 if type(status) == None:
                     if status[1] == "kill":
+                        self.error_box["text"] = str(e)
                         break
                 if reboot_count <= 2:
                     print("Resetting attempt: " + str(reboot_count +1))
                     reboot_count += 1
                 elif reboot_count > 2:
                     status = ("FATAL", "kill")
+                    self.error_box["text"] = str(e)
                     break
         else:
-            try:
+            # try:
                 status = my_orchestrator.orchestrator()
-            except:
-                e = sys.exc_info()[0]
-                print("UNCLASSIFIED FATAL ERROR: " + str(e))
-                status = ("FATAL", "kill")
-            
+            # except:
+            #     e = sys.exc_info()[0]
+            #     print("UNCLASSIFIED FATAL ERROR: " + str(e))
+            #     self.error_box["text"] = str(e)
+            #     status = ("FATAL", "kill")
+        
+        fatal = False
+        
         if status[0] == "FATAL":
             print("Exiting program due to fatal error...")
             self._kill = True
+            fatal = True
         if status[0] == "complete":
             print("Exiting program due to time completion...")
             self._kill = True
+            fatal = False
         
         if self._kill == True:
             self._kill == False
             total_time = my_orchestrator.grabTotalTime()
-            self.time_label["text"] = "End of script reached.\nAlloted time: "+str(round(total_time, 2))+" seconds.\nThank you for choosing TarkBot!"
-            
+            if fatal == False:
+                self.time_label["text"] = "End of script reached.\nAlloted time: "+str(round(total_time, 2))+" seconds.\nThank you for choosing TarkBot!"
+            else:
+                self.time_label["text"] = "Fatal end of script.\nAlloted time: "+str(round(total_time, 2))+" seconds.\nThank you for choosing TarkBot!"
             for proc in psutil.process_iter():
                 if proc.name() in self.process_names:
                     print("Killing " + proc.name() + " instance")

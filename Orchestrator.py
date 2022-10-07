@@ -67,7 +67,7 @@ class Orchestrator:
         if self.workbench_runs == self.workbench_tuple[1][1]:
             print("Workbench run count already reached")
             return
-        status = self.my_checker.errorChecker(self.my_hideout.makeRecipe, self.workbench_tuple[1][0]) 
+        status = self.my_checker.errorChecker(self.my_hideout.makeRecipe, self.workbench_tuple[1][0], "workbench") 
         if status == "fail":
             print("Error: Workbench failure. Aborting attempt")
             return 'fail'
@@ -81,7 +81,7 @@ class Orchestrator:
         if self.intel_runs == self.intel_tuple[1][1]:
             print("Intel run count already reached")
             return
-        status = self.my_checker.errorChecker(self.my_hideout.makeRecipe, self.intel_tuple[1][0]) 
+        status = self.my_checker.errorChecker(self.my_hideout.makeRecipe, self.intel_tuple[1][0], "intel") 
         if status == "fail":
             print("Error: Intel failure. Aborting attempt")
             return 'fail'
@@ -96,7 +96,7 @@ class Orchestrator:
         if self.med_runs == self.med_tuple[1][1]:
             print("Medstation run count already reached")
             return
-        status = self.my_checker.errorChecker(self.my_hideout.makeRecipe, self.med_tuple[1][0]) 
+        status = self.my_checker.errorChecker(self.my_hideout.makeRecipe, self.med_tuple[1][0], "med") 
         if status == "fail":
             print("Error: Medstation failure. Aborting attempt")
             return 'fail'
@@ -110,7 +110,7 @@ class Orchestrator:
         if self.lav_runs == self.lav_tuple[1][1]:
             print("Lavatory run count already reached")
             return
-        status = self.my_checker.errorChecker(self.my_hideout.makeRecipe, self.lav_tuple[1][0]) 
+        status = self.my_checker.errorChecker(self.my_hideout.makeRecipe, self.lav_tuple[1][0], "lav") 
         if status == "fail":
             print("Error: Lavatory failure. Aborting attempt")
             return 'fail'
@@ -124,7 +124,7 @@ class Orchestrator:
         if self.nutrition_runs == self.nutrition_tuple[1][1]:
             print("Nutrition run count already reached")
             return
-        status = self.my_checker.errorChecker(self.my_hideout.makeRecipe, self.nutrition_tuple[1][0]) 
+        status = self.my_checker.errorChecker(self.my_hideout.makeRecipe, self.nutrition_tuple[1][0], "nutrition") 
         if status == "fail":
             print("Error: Nutrition failure. Aborting attempt")
             return 'fail'
@@ -138,7 +138,7 @@ class Orchestrator:
         if self.scav_runs == self.scav_tuple[1][1]:
             print("Scav case run count already reached")
             return
-        status = self.my_checker.errorChecker(self.my_hideout.makeRecipe, self.scav_tuple[1][0]) 
+        status = self.my_checker.errorChecker(self.my_hideout.makeRecipe, self.scav_tuple[1][0], "scav") 
         if status == "fail":
             print("Error: Scav Case failure. Aborting attempt")
             return 'fail'
@@ -250,6 +250,8 @@ class Orchestrator:
             _reset = None
             
         self.my_hideout.geneOnCheck()
+        gene_check = False
+        
         for item in end_list:
             if item[0] == "generator" and (_reset == None or _reset == "generator"):
                 status = self.runGenerator()
@@ -259,10 +261,12 @@ class Orchestrator:
                 self.generator_runs += 1
                 if self.my_hideout.checkForNoFuel() == "FATAL":
                     return ("FATAL", "kill")
-            
-            elif self.my_hideout.checkForNoFuel() == "FATAL":
-                #maybe change to any node
-                return ("FATAL", "kill")
+                gene_check = True
+                continue
+            elif gene_check == False:
+                if self.my_hideout.checkForNoFuel() == "FATAL":
+                    return ("FATAL", "kill")
+                gene_check = True
             
             if item[0] == "workbench" and (_reset == None or _reset == "workbench"):
                 status = self.runWorkbench()
@@ -336,9 +340,9 @@ class Orchestrator:
             #At this point, program assumes you are on tarkov fully loaded home page 
             #if reset_value = getAll, don't need to change anything
             if _reset == None or _reset == "getAll":
-                status = self.my_hideout.getAllItems() 
-                if status == "FATAL":
-                    return ("FATAL", "getAll")
+                # status = self.my_hideout.getAllItems() 
+                # if status == "FATAL":
+                #     return ("FATAL", "getAll")
                 status = self.runAll()
                 if status != "success":
                     return "FATAL"
@@ -350,6 +354,15 @@ class Orchestrator:
                 sleep_value = 900 * self.checkupFreq - (current_time - self.initial_epoch)
                 print("Loop complete. Time til next checkup: " + str(round(sleep_value, 2)) + "s")
                 print("+-+-+-+-+-+-+-+-+-+-+-+-+-")
+                self.my_hideout.goToMainMenu()
+                sleep(sleep_value/4)
+                pygui.click(x=1395, y=543)
+                sleep(sleep_value/4)
+                pygui.click(x=876, y=543)
+                sleep(sleep_value/4)
+                pygui.click(x=1395, y=543)
+                sleep(sleep_value/4)
+                self.repeat_epoch = time()
                 sleep(sleep_value)
                 self.repeat_epoch = time()
                 
@@ -368,7 +381,14 @@ class Orchestrator:
                 sleep_value = 900 * self.checkupFreq - (current_time - self.initial_epoch)
                 print("Loop complete. Time til next checkup: " + str(round(sleep_value, 2)) + "s")
                 print("+-+-+-+-+-+-+-+-+-+-+-+-+-")
-                sleep(sleep_value)
+                self.my_hideout.goToMainMenu()
+                sleep(sleep_value/4)
+                pygui.click(x=1395, y=543)
+                sleep(sleep_value/4)
+                pygui.click(x=876, y=543)
+                sleep(sleep_value/4)
+                pygui.click(x=1395, y=543)
+                sleep(sleep_value/4)
                 self.repeat_epoch = time()
                 _reset = None
                 
